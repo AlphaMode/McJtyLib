@@ -8,6 +8,7 @@ plugins {
 
 repositories {
     maven { url 'https://mvn.devos.one/snapshots/' }
+    maven { url = "https://cursemaven.com" }
     maven { url = "https://jitpack.io/" }
     maven { // REI
         url "https://maven.shedaniel.me/"
@@ -64,6 +65,7 @@ dependencies {
     //deobfCompile "net.darkhax.tesla:Tesla-1.12.2:1.0.63"
 
     //implementation "li.cil.oc:OpenComputers:${oc_version}"
+    modImplementation(include("curse.maven:forge-config-api-port-fabric-547434:${project.config_api_version}"))
 }
 
 jar {

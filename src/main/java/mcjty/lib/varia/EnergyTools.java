@@ -1,10 +1,12 @@
 package mcjty.lib.varia;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import mcjty.lib.McJtyLib;
 import mcjty.lib.api.power.IBigPower;
 import mcjty.lib.compat.TeslaCompatibility;
 import mcjty.lib.fabric.TransferHelper;
 import mcjty.lib.tileentity.GenericEnergyStorage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -92,7 +94,12 @@ public class EnergyTools {
     public static long receiveEnergy(ItemStack stack, long maxReceive) {
         Item item = stack.getItem();
         if (item instanceof IEnergyItem) {
-            return ((IEnergyItem)item).receiveEnergyL(stack, maxReceive, false);
+            long inserted = 0;
+            try (Transaction t = TransferUtil.getTransaction()) {
+                inserted = ((IEnergyItem) item).receiveEnergyL(stack, maxReceive, t);
+                t.commit();
+            }
+            return inserted;
         } else if (McJtyLib.tesla && TeslaCompatibility.isEnergyItem(stack)) {
             return TeslaCompatibility.receiveEnergy(stack, maxReceive, false);
         } else {

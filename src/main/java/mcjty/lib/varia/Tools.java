@@ -1,5 +1,8 @@
 package mcjty.lib.varia;
 
+import io.github.fabricators_of_create.porting_lib.extensions.RegistryNameProvider;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -13,8 +16,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -25,17 +26,17 @@ public class Tools {
 
     public static String getModid(ItemStack stack) {
         if (!stack.isEmpty()) {
-            return stack.getItem().getRegistryName().getNamespace();
+            return Registry.ITEM.getKey(stack.getItem()).getNamespace();
         } else {
             return "";
         }
     }
 
-    public static String getModName(IForgeRegistryEntry<?> entry) {
+    public static String getModName(RegistryNameProvider entry) {
         ResourceLocation registryName = entry.getRegistryName();
         String modId = registryName == null ? "minecraft" : registryName.getNamespace();
-        return ModList.get().getModContainerById(modId)
-                .map(mod -> mod.getModInfo().getDisplayName())
+        return FabricLoader.getInstance().getModContainer(modId)
+                .map(mod -> mod.getMetadata().getName())
                 .orElse(StringUtils.capitalize(modId));
     }
 

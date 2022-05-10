@@ -1,5 +1,7 @@
 package mcjty.lib.varia;
 
+import io.github.fabricators_of_create.porting_lib.extensions.EntityExtensions;
+import io.github.fabricators_of_create.porting_lib.extensions.ITeleporter;
 import mcjty.lib.McJtyLib;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -9,7 +11,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.ITeleporter;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -41,7 +42,7 @@ public class TeleportationTools {
             McJtyLib.setup.getLogger().error("Something went wrong teleporting to dimension " + dimension.location().getPath());
             return;
         }
-        player.changeDimension(world, new ITeleporter() {
+        ((EntityExtensions)player).changeDimension(world, new ITeleporter() {
             @Override
             public Entity placeEntity(Entity entity, ServerLevel currentWorld, ServerLevel destWorld, float yaw, Function<Boolean, Entity> repositionEntity) {
                 entity = repositionEntity.apply(false);
@@ -86,7 +87,7 @@ public class TeleportationTools {
             ((ServerLevel) destWorld).tickNonPassenger(entity);
             return entity;
         } else {
-            return entity.changeDimension((ServerLevel) destWorld, new ITeleporter() {
+            return ((EntityExtensions)entity).changeDimension((ServerLevel) destWorld, new ITeleporter() {
                 @Override
                 public Entity placeEntity(Entity entity, ServerLevel currentWorld, ServerLevel destWorld, float yaw, Function<Boolean, Entity> repositionEntity) {
                     entity = repositionEntity.apply(false);
