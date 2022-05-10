@@ -6,7 +6,7 @@ import mcjty.lib.client.RenderHelper;
 import mcjty.lib.gui.GuiParser;
 import mcjty.lib.typed.Type;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraftforge.energy.IEnergyStorage;
+import team.reborn.energy.api.EnergyStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ public class EnergyBar extends AbstractWidget<EnergyBar> {
     private Integer spacerColor = null;
     private Integer textColor = null;
     private boolean horizontal = DEFAULT_HORIZONTAL;
-    private IEnergyStorage handler = null;
+    private EnergyStorage handler = null;
     private boolean showText = DEFAULT_SHOWTEXT;
     private boolean showRfPerTick = DEFAULT_SHOWRFPERTICK;
     private long rfPerTick = 0;
@@ -40,12 +40,12 @@ public class EnergyBar extends AbstractWidget<EnergyBar> {
         return horizontal;
     }
 
-    public EnergyBar handler(IEnergyStorage handler) {
+    public EnergyBar handler(EnergyStorage handler) {
         this.handler = handler;
         return this;
     }
 
-    public IEnergyStorage getHandler() {
+    public EnergyStorage getHandler() {
         return handler;
     }
 
@@ -99,7 +99,7 @@ public class EnergyBar extends AbstractWidget<EnergyBar> {
 
     public long getValue() {
         if (handler != null) {
-            return handler.getEnergyStored();
+            return handler.getAmount();
         }
         return value;
     }
@@ -111,7 +111,7 @@ public class EnergyBar extends AbstractWidget<EnergyBar> {
 
     public long getMaxValue() {
        if (handler != null) {
-           return handler.getMaxEnergyStored();
+           return handler.getCapacity();
        }
        return maxValue;
     }

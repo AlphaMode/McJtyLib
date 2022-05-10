@@ -1,5 +1,7 @@
 package mcjty.lib.multipart;
 
+import io.github.fabricators_of_create.porting_lib.block.CustomDataPacketHandlingBlockEntity;
+import io.github.fabricators_of_create.porting_lib.model.IModelData;
 import io.github.fabricators_of_create.porting_lib.model.ModelProperty;
 import mcjty.lib.tileentity.GenericTileEntity;
 import net.minecraft.core.BlockPos;
@@ -16,10 +18,6 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.client.model.ModelDataManager;
-import net.minecraftforge.client.model.data.IModelData;
-import net.minecraftforge.client.model.data.ModelDataMap;
-import net.minecraftforge.client.model.data.ModelProperty;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,7 +27,7 @@ import java.util.Map;
 
 import static mcjty.lib.setup.Registration.TYPE_MULTIPART;
 
-public class MultipartTE extends BlockEntity {
+public class MultipartTE extends BlockEntity implements CustomDataPacketHandlingBlockEntity {
 
     public static final ModelProperty<Map<PartSlot, Part>> PARTS = new ModelProperty<>();
 

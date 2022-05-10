@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.keys.KeyBindings;
 import mcjty.lib.varia.SafeClientTools;
+import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -15,9 +16,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraftforge.client.event.RenderTooltipEvent;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -103,6 +101,10 @@ public class TooltipRender {
 
             components.add(Either.right(new ClientTooltipIcon(items, STACKS_PER_LINE)));
         }
+    }
+
+    public static void init() {
+//        TooltipComponentCallback.EVENT.register(data -> );
     }
 
 }

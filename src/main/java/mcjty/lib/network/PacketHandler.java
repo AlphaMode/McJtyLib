@@ -2,6 +2,7 @@ package mcjty.lib.network;
 
 import mcjty.lib.syncpositional.PacketSendPositionalDataToClients;
 import mcjty.lib.typed.TypedMap;
+import me.pepperbell.simplenetworking.SimpleChannel;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 import javax.annotation.Nonnull;

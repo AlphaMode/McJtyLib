@@ -2,19 +2,20 @@ package mcjty.lib.syncpositional;
 
 import mcjty.lib.McJtyLib;
 import mcjty.lib.varia.LevelTools;
+import me.pepperbell.simplenetworking.S2CPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.GlobalPos;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 /**
  * This packet is used to sync positional data from server to all affected clients
  */
-public class PacketSendPositionalDataToClients {
+public class PacketSendPositionalDataToClients implements S2CPacket {
 
     private final GlobalPos pos;
     private final IPositionalData data;
@@ -31,18 +32,17 @@ public class PacketSendPositionalDataToClients {
         data = McJtyLib.SYNCER.create(id, buf);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeResourceLocation(pos.dimension().location());
         buf.writeBlockPos(pos.pos());
         buf.writeResourceLocation(data.getId());
         data.toBytes(buf);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    public void handle(Minecraft client, ClientPacketListener handler, SimpleChannel.ResponseTarget responseTarget) {
+        client.execute(() -> {
             McJtyLib.SYNCER.handle(pos, data);
         });
-        ctx.setPacketHandled(true);
     }
 }

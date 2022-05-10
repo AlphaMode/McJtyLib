@@ -1,18 +1,18 @@
 package mcjty.lib.network;
 
 import mcjty.lib.compat.patchouli.PatchouliCompatibility;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
+import me.pepperbell.simplenetworking.C2SPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
 /**
  * Open the manual
  */
-public class PacketOpenManual {
+public class PacketOpenManual implements C2SPacket {
 
     private final ResourceLocation manual;
     private final ResourceLocation entry;
@@ -24,7 +24,8 @@ public class PacketOpenManual {
         page = buf.readInt();
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeResourceLocation(manual);
         buf.writeResourceLocation(entry);
         buf.writeInt(page);
@@ -36,13 +37,12 @@ public class PacketOpenManual {
         this.page = page;
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> handle(this, ctx.get()));
-        ctx.get().setPacketHandled(true);
+    @Override
+    public void handle(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler, SimpleChannel.ResponseTarget responseTarget) {
+        server.execute(() -> handle(this, player));
     }
 
-    private static void handle(PacketOpenManual message, NetworkEvent.Context ctx) {
-        ServerPlayer playerEntity = ctx.getSender();
+    private static void handle(PacketOpenManual message, ServerPlayer playerEntity) {
         PatchouliCompatibility.openBookEntry(playerEntity, message.manual, message.entry, message.page);
     }
 }

@@ -13,9 +13,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,7 +45,7 @@ public class ItemStackTools {
         if (tileEntity == null) {
             return ItemStack.EMPTY;
         }
-        return tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+        return TransferHelper.getItemStorage(tileEntity)
                 .map(handler -> handler.getStackInSlot(slot))
                 .orElse(ItemStack.EMPTY);
     }

@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -108,10 +107,9 @@ public class PositionalDataSyncer {
             timeout = 10;   // @todo configurable
             for (Map.Entry<PositionalDataKey, IPositionalData> entry : syncTodo.entrySet()) {
                 GlobalPos pos = entry.getKey().pos();
-                McJtyLib.networkHandler.send(PacketDistributor.TRACKING_CHUNK.with(() -> {
-                    ServerLevel level = server.getLevel(pos.dimension());
-                    return (LevelChunk)(level.getChunk(pos.pos()));
-                }), new PacketSendPositionalDataToClients(pos, entry.getValue()));
+                ServerLevel level = server.getLevel(pos.dimension());
+                LevelChunk chunkPos = (LevelChunk)(level.getChunk(pos.pos()));
+                McJtyLib.networkHandler.sendToClientsTracking(new PacketSendPositionalDataToClients(pos, entry.getValue()), level, chunkPos.getPos());
             }
             syncTodo.clear();
         }

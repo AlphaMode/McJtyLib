@@ -1,5 +1,7 @@
 package mcjty.lib.setup;
 
+import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents;
+import io.github.fabricators_of_create.porting_lib.event.common.PlayerTickEvents;
 import mcjty.lib.McJtyLib;
 import mcjty.lib.api.container.CapabilityContainerProvider;
 import mcjty.lib.api.information.CapabilityPowerInformation;
@@ -11,6 +13,9 @@ import mcjty.lib.multipart.MultipartTE;
 import mcjty.lib.network.PacketHandler;
 import mcjty.lib.preferences.PreferencesDispatcher;
 import mcjty.lib.preferences.PreferencesProperties;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.Entity;
@@ -23,19 +28,6 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.ChunkWatchEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.network.NetworkRegistry;
 
 import static mcjty.lib.McJtyLib.MODID;
 
@@ -57,43 +49,45 @@ public class ModSetup extends DefaultModSetup {
     }
 
     @Override
-    public void init(FMLCommonSetupEvent e) {
-        super.init(e);
-        McJtyLib.networkHandler = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, MODID), () -> "1.0", s -> true, s -> true);
+    public void init() {
+        super.init();
+        McJtyLib.networkHandler = new SimpleChannel(new ResourceLocation(MODID, MODID));
         PacketHandler.registerMessages(McJtyLib.networkHandler);
-        MinecraftForge.EVENT_BUS.register(new EventHandler());
-        McJtyLib.tesla = ModList.get().isLoaded("tesla");
-        McJtyLib.cofhapiitem = ModList.get().isLoaded("cofhapi|item");
+//        MinecraftForge.EVENT_BUS.register(new EventHandler());
+        McJtyLib.tesla = FabricLoader.getInstance().isModLoaded("tesla");
+        McJtyLib.cofhapiitem = FabricLoader.getInstance().isModLoaded("cofhapi|item");
+
+        PlayerTickEvents.START.register(EventHandler::onPlayerTickEvent);
+        BlockEvents.LEFT_CLICK_BLOCK.register(EventHandler::onPlayerInteract);
     }
 
     @Override
     protected void setupModCompat() {
-        patchouli = ModList.get().isLoaded("patchouli");
+        patchouli = FabricLoader.getInstance().isModLoaded("patchouli");
     }
 
     public static class EventHandler {
 
         @SubscribeEvent
-        public void onWorldTick(TickEvent.WorldTickEvent event) {
+        public static void onWorldTick(TickEvent.WorldTickEvent event) {
             if (event.phase == TickEvent.Phase.START && event.world.dimension() == Level.OVERWORLD) {
                 McJtyLib.SYNCER.sendOutData(event.world.getServer());
             }
         }
 
         @SubscribeEvent
-        public void onChunkWatch(ChunkWatchEvent.Watch event) {
+        public static void onChunkWatch(ChunkWatchEvent.Watch event) {
             McJtyLib.SYNCER.startWatching(event.getPlayer());
         }
 
-        @SubscribeEvent
-        public void onPlayerTickEvent(TickEvent.PlayerTickEvent event) {
-            if (event.phase == TickEvent.Phase.START && !event.player.getCommandSenderWorld().isClientSide) {
+        public static void onPlayerTickEvent(Player player) {
+            if (!player.getCommandSenderWorld().isClientSide) {
                 McJtyLib.getPreferencesProperties(event.player).ifPresent(handler -> handler.tick((ServerPlayer) event.player));
             }
         }
 
         @SubscribeEvent
-        public void onEntityConstructing(AttachCapabilitiesEvent<Entity> event){
+        public static void onEntityConstructing(AttachCapabilitiesEvent<Entity> event){
             if (event.getObject() instanceof Player) {
                 if (!event.getCapabilities().containsKey(PREFERENCES_CAPABILITY_KEY) && !event.getObject().getCapability(PREFERENCES_CAPABILITY).isPresent()) {
                     event.addCapability(PREFERENCES_CAPABILITY_KEY, new PreferencesDispatcher());
@@ -103,10 +97,8 @@ public class ModSetup extends DefaultModSetup {
             }
         }
 
-        @SubscribeEvent
-        public void onPlayerInteract(PlayerInteractEvent.LeftClickBlock event) {
-            Level world = event.getWorld();
-            BlockPos pos = event.getPos();
+        public static void onPlayerInteract(Player player, BlockPos pos, Direction face) {
+            Level world = player.getLevel();
             BlockState state = world.getBlockState(pos);
             if (state.getBlock() instanceof MultipartBlock) {
                 BlockEntity tileEntity = world.getBlockEntity(pos);
@@ -114,7 +106,6 @@ public class ModSetup extends DefaultModSetup {
                     if (!world.isClientSide) {
 
                         // @todo 1.14 until LeftClickBlock has 'hitVec' again we need to do this:
-                        Player player = event.getPlayer();
                         Vec3 start = player.getEyePosition(1.0f);
                         Vec3 vec31 = player.getViewVector(1.0f);
                         float dist = 20;

@@ -1,6 +1,7 @@
 package mcjty.lib;
 
 import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
 import mcjty.lib.base.GeneralConfig;
 import mcjty.lib.blockcommands.CommandInfo;
 import mcjty.lib.multipart.MultipartModelLoader;

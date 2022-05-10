@@ -1,8 +1,8 @@
 package mcjty.lib.setup;
 
+import io.github.fabricators_of_create.porting_lib.util.LazyItemGroup;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,7 +14,7 @@ public abstract class DefaultModSetup {
     private Logger logger;
     protected CreativeModeTab creativeTab;
 
-    public void init(FMLCommonSetupEvent e) {
+    public void init() {
         logger = LogManager.getLogger();
 
         setupModCompat();
@@ -23,7 +23,7 @@ public abstract class DefaultModSetup {
     protected abstract void setupModCompat();
 
     protected void createTab(String name, Supplier<ItemStack> stack) {
-        creativeTab = new CreativeModeTab(name) {
+        creativeTab = new LazyItemGroup(name) {
             @Override
             @Nonnull
             public ItemStack makeIcon() {

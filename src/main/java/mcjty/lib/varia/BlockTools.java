@@ -1,12 +1,12 @@
 package mcjty.lib.varia;
 
 import com.google.common.collect.ImmutableMap;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -16,7 +16,7 @@ public class BlockTools {
 
     // Write a blockstate to a string
     public static String writeBlockState(BlockState tag) {
-        StringBuilder builder = new StringBuilder(ForgeRegistries.BLOCKS.getKey(tag.getBlock()).toString());
+        StringBuilder builder = new StringBuilder(Registry.BLOCK.getKey(tag.getBlock()).toString());
         ImmutableMap<Property<?>, Comparable<?>> properties = tag.getValues();
         if (!properties.isEmpty()) {
             char c = '@';
@@ -48,7 +48,7 @@ public class BlockTools {
             blockName = s;
             properties = null;
         }
-        Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName));
+        Block block = Registry.BLOCK.get(new ResourceLocation(blockName));
         if (block == null) {
             throw new RuntimeException("Cannot find block '" + blockName + "'!");
         }

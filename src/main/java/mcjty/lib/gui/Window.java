@@ -1,6 +1,7 @@
 package mcjty.lib.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.fabricators_of_create.porting_lib.mixin.client.accessor.ScreenAccessor;
 import mcjty.lib.McJtyLib;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.IRunnable;
@@ -18,13 +19,13 @@ import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.StringRegister;
+import me.pepperbell.simplenetworking.SimpleChannel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.simple.SimpleChannel;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nonnull;
@@ -304,7 +305,7 @@ public class Window {
             toplevel.setWindow(this);
             toplevel.mouseScrolled(x, y, dwheel);
         }
-        currentStyle = McJtyLib.getPreferencesProperties(gui.getMinecraft().player).map(PreferencesProperties::getStyle).orElse(GuiStyle.STYLE_FLAT_GRADIENT);
+        currentStyle = McJtyLib.getPreferencesProperties(((ScreenAccessor)gui).port_lib$getMinecraft().player).map(PreferencesProperties::getStyle).orElse(GuiStyle.STYLE_FLAT_GRADIENT);
 
         toplevel.setWindow(this);
         toplevel.draw(gui, matrixStack, 0, 0);
@@ -341,20 +342,20 @@ public class Window {
     }
 
     private int getRelativeX() {
-        int windowWidth = gui.getMinecraft().getWindow().getScreenWidth();
+        int windowWidth = ((ScreenAccessor)gui).port_lib$getMinecraft().getWindow().getScreenWidth();
         if (windowWidth == 0) {
             return 0;
         } else {
-            return (int) gui.getMinecraft().mouseHandler.xpos() * gui.width / windowWidth;
+            return (int) ((ScreenAccessor)gui).port_lib$getMinecraft().mouseHandler.xpos() * gui.width / windowWidth;
         }
     }
 
     private int getRelativeY() {
-        int windowHeight = gui.getMinecraft().getWindow().getScreenHeight();
+        int windowHeight = ((ScreenAccessor)gui).port_lib$getMinecraft().getWindow().getScreenHeight();
         if (windowHeight == 0) {
             return 0;
         } else {
-            return (int) gui.getMinecraft().mouseHandler.ypos() * gui.height / windowHeight;
+            return (int) ((ScreenAccessor)gui).port_lib$getMinecraft().mouseHandler.ypos() * gui.height / windowHeight;
         }
     }
 

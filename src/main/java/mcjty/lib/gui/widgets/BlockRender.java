@@ -2,19 +2,19 @@ package mcjty.lib.gui.widgets;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.RenderHelper;
 import mcjty.lib.gui.GuiParser;
 import mcjty.lib.gui.events.BlockRenderEvent;
 import mcjty.lib.typed.Type;
 import mcjty.lib.varia.ItemStackTools;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -229,11 +229,11 @@ public class BlockRender extends AbstractWidget<BlockRender> {
         if (value == null) {
             renderItem(null);
         } else {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(value.toString()));
+            Item item = Registry.ITEM.get(new ResourceLocation(value.toString()));
             if (item != null) {
                 renderItem(new ItemStack(item));
             } else {
-                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(value.toString()));
+                Block block = Registry.BLOCK.get(new ResourceLocation(value.toString()));
                 if (block != null) {
                     renderItem(new ItemStack(block));
                 } else {
@@ -246,7 +246,7 @@ public class BlockRender extends AbstractWidget<BlockRender> {
     @Override
     public Object getGenericValue(Type<?> type) {
         if (renderItem instanceof ItemStack) {
-            return ((ItemStack) renderItem).getItem().getRegistryName().toString();
+            return Registry.ITEM.getKey(((ItemStack) renderItem).getItem()).toString();
         } else {
             return null;
         }

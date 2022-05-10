@@ -1,13 +1,17 @@
 package mcjty.lib.varia;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import mcjty.lib.fabric.TransferHelper;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nonnull;
 import java.util.function.Predicate;
@@ -26,22 +30,24 @@ public class InventoryTools {
     }
 
     public static boolean isInventory(BlockEntity te) {
-        return te != null && te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).isPresent();
+        return te != null && TransferHelper.getItemStorage(te).isPresent();
     }
 
     /**
      * Return a stream of items in an inventory matching the predicate
      */
-    public static Stream<ItemStack> getItems(BlockEntity tileEntity, Predicate<ItemStack> predicate) {
-        Stream.Builder<ItemStack> builder = Stream.builder();
+    public static Stream<ResourceAmount<ItemVariant>> getItems(BlockEntity tileEntity, Predicate<ResourceAmount<ItemVariant>> predicate) {
+        Stream.Builder<ResourceAmount<ItemVariant>> builder = Stream.builder();
 
         if (tileEntity != null) {
-            tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(handler -> {
-                for (int i = 0; i < handler.getSlots(); i++) {
-                    ItemStack itemStack = handler.getStackInSlot(i);
-                    if (!itemStack.isEmpty() && predicate.test(itemStack)) {
-                        builder.add(itemStack);
-                    }
+            TransferHelper.getItemStorage(tileEntity).ifPresent(handler -> {
+                try (Transaction t = TransferUtil.getTransaction()) {
+                    handler.iterable(t).forEach(view -> {
+                        ResourceAmount<ItemVariant> resourceAmount = new ResourceAmount<>(view.getResource(), view.getAmount());
+                        if (!view.isResourceBlank() && predicate.test(resourceAmount)) {
+                            builder.add(resourceAmount);
+                        }
+                    });
                 }
             });
         }
@@ -52,19 +58,21 @@ public class InventoryTools {
      * Return the first item in an inventory matching the predicate
      */
     @Nonnull
-    public static ItemStack getFirstMatchingItem(BlockEntity tileEntity, Predicate<ItemStack> predicate) {
+    public static ResourceAmount<ItemVariant> getFirstMatchingItem(BlockEntity tileEntity, Predicate<ResourceAmount<ItemVariant>> predicate) {
         if (tileEntity != null) {
-            return tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(handler -> {
-                for (int i = 0; i < handler.getSlots(); i++) {
-                    ItemStack itemStack = handler.getStackInSlot(i);
-                    if (!itemStack.isEmpty() && predicate.test(itemStack)) {
-                        return itemStack;
+            return TransferHelper.getItemStorage(tileEntity).map(handler -> {
+                try (Transaction t = TransferUtil.getTransaction()) {
+                    for (StorageView<ItemVariant> view : handler.iterable(t)) {
+                        ResourceAmount<ItemVariant> resourceAmount = new ResourceAmount<>(view.getResource(), view.getAmount());
+                        if (!view.isResourceBlank() && predicate.test(resourceAmount)) {
+                            return resourceAmount;
+                        }
                     }
                 }
-                return ItemStack.EMPTY;
-            }).orElse(ItemStack.EMPTY);
+                return new ResourceAmount<>(ItemVariant.blank(), 0L);
+            }).orElse(new ResourceAmount<>(ItemVariant.blank(), 0L));
         }
-        return ItemStack.EMPTY;
+        return new ResourceAmount<>(ItemVariant.blank(), 0L);
     }
 
     /**
@@ -77,8 +85,8 @@ public class InventoryTools {
         BlockEntity te = world.getBlockEntity(direction == null ? pos : pos.relative(direction));
         if (te != null) {
             Direction opposite = direction == null ? null : direction.getOpposite();
-            return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, opposite)
-                    .map(handler -> ItemHandlerHelper.insertItem(handler, s, false))
+            return TransferHelper.getItemStorage(te, opposite)
+                    .map(handler -> TransferHelper.quickInsert(handler, s, false))
                     .orElse(ItemStack.EMPTY);
         }
         return s;
@@ -91,7 +99,7 @@ public class InventoryTools {
     }
 
     @Nonnull
-    public static ItemStack insertItemRanged(IItemHandler dest, @Nonnull ItemStack stack, int start, int stop, boolean simulate) {
+    public static ItemStack insertItemRanged(Storage<ItemVariant> dest, @Nonnull ItemStack stack, int start, int stop, boolean simulate) {
         if (dest == null || stack.isEmpty())
             return stack;
 

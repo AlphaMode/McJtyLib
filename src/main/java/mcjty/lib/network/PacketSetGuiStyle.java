@@ -1,16 +1,17 @@
 package mcjty.lib.network;
 
 import mcjty.lib.McJtyLib;
+import me.pepperbell.simplenetworking.C2SPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
 /**
  * Change the GUI style.
  */
-public class PacketSetGuiStyle {
+public class PacketSetGuiStyle implements C2SPacket {
 
     // Package visible for unit tests
     private final String style;
@@ -19,7 +20,8 @@ public class PacketSetGuiStyle {
         style = buf.readUtf(32767);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeUtf(style);
     }
 
@@ -27,13 +29,12 @@ public class PacketSetGuiStyle {
         this.style = style;
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> handle(this, ctx.get()));
-        ctx.get().setPacketHandled(true);
+    @Override
+    public void handle(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler, SimpleChannel.ResponseTarget responseTarget) {
+        server.execute(() -> handle(this, player));
     }
 
-    private static void handle(PacketSetGuiStyle message, NetworkEvent.Context ctx) {
-        ServerPlayer playerEntity = ctx.getSender();
+    private static void handle(PacketSetGuiStyle message, ServerPlayer playerEntity) {
         McJtyLib.getPreferencesProperties(playerEntity).ifPresent(p -> p.setStyle(message.style));
     }
 }

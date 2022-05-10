@@ -1,8 +1,5 @@
 package mcjty.lib.modules;
 
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +11,12 @@ public class Modules {
         modules.add(module);
     }
 
-    public void init(FMLCommonSetupEvent event) {
-        modules.forEach(m -> m.init(event));
+    public void init() {
+        modules.forEach(m -> m.init());
     }
 
-    public void initClient(FMLClientSetupEvent event) {
-        modules.forEach(m -> m.initClient(event));
+    public void initClient() {
+        modules.forEach(m -> m.initClient());
     }
 
     public void initConfig() {
