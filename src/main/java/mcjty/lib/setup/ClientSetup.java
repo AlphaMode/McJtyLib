@@ -3,6 +3,7 @@ package mcjty.lib.setup;
 import mcjty.lib.ClientEventHandler;
 import mcjty.lib.keys.KeyBindings;
 import mcjty.lib.keys.KeyInputHandler;
+import mcjty.lib.multipart.MultipartModelLoader;
 import mcjty.lib.tooltips.ClientTooltipIcon;
 import mcjty.lib.tooltips.TooltipRender;
 import net.fabricmc.api.ClientModInitializer;
@@ -30,6 +31,8 @@ public class ClientSetup implements ClientModInitializer {
 //                .forEach(type -> {
 //                    Minecraft.getInstance().renderBuffers().fixedBuffers.put(type, new BufferBuilder(type.bufferSize()));
 //                });
+
+        MultipartModelLoader.register();
     }
 
 }

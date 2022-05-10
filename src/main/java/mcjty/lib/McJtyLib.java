@@ -15,14 +15,14 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.api.ModLoadingContext;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.fml.event.config.ModConfigEvent;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.network.simple.SimpleChannel;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
@@ -52,14 +52,13 @@ public class McJtyLib implements ModInitializer {
     public void onInitialize() {
         instance = this;
         // Register the setup method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(setup::init);
-        EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
-            FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientSetup::init);
-            FMLJavaModLoadingContext.get().getModEventBus().addListener(MultipartModelLoader::register);
-        });
+        setup.init();
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, GeneralConfig.CLIENT_CONFIG);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, GeneralConfig.SERVER_CONFIG);
+        ModLoadingContext.registerConfig(MODID, ModConfig.Type.CLIENT, GeneralConfig.CLIENT_CONFIG);
+        ModLoadingContext.registerConfig(MODID, ModConfig.Type.SERVER, GeneralConfig.SERVER_CONFIG);
+
+        ModConfigEvent.LOADING.register(GeneralConfig::onLoad);
+        ModConfigEvent.RELOADING.register(GeneralConfig::onFileChange);
     }
 
     /**

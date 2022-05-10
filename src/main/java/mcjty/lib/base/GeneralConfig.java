@@ -5,13 +5,10 @@ import com.electronwill.nightconfig.core.io.WritingMode;
 import mcjty.lib.McJtyLib;
 import mcjty.lib.varia.Logging;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.fml.config.ModConfig;
 
 import java.nio.file.Path;
 
-@Mod.EventBusSubscriber(modid = McJtyLib.MODID)
 public class GeneralConfig {
 
     private static final ForgeConfigSpec.Builder SERVER_BUILDER = new ForgeConfigSpec.Builder();
@@ -65,13 +62,11 @@ public class GeneralConfig {
         spec.setConfig(configData);
     }
 
-    @SubscribeEvent
-    public static void onLoad(final ModConfigEvent.Loading configEvent) {
+    public static void onLoad(ModConfig modConfig) {
         StyleConfig.updateColors();
     }
 
-    @SubscribeEvent
-    public static void onFileChange(final ModConfigEvent.Reloading configEvent) {
+    public static void onFileChange(ModConfig modConfig) {
         StyleConfig.updateColors();
     }
 }
