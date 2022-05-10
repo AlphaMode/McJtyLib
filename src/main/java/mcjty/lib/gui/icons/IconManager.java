@@ -1,6 +1,7 @@
 package mcjty.lib.gui.icons;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.fabricators_of_create.porting_lib.mixin.client.accessor.ScreenAccessor;
 import mcjty.lib.gui.WindowManager;
 import mcjty.lib.gui.widgets.IconHolder;
 import mcjty.lib.gui.widgets.Widget;
@@ -100,20 +101,20 @@ public class IconManager {
 
     private int getRelativeX() {
         Screen gui = windowManager.getGui();
-        int width = gui.getMinecraft().getWindow().getScreenWidth();
+        int width = ((ScreenAccessor)gui).port_lib$getMinecraft().getWindow().getScreenWidth();
         if (width <= 0) {
             return 0;
         }
-        return (int) gui.getMinecraft().mouseHandler.xpos() * gui.width / width;
+        return (int) ((ScreenAccessor)gui).port_lib$getMinecraft().mouseHandler.xpos() * gui.width / width;
     }
 
     private int getRelativeY() {
         Screen gui = windowManager.getGui();
-        int height = gui.getMinecraft().getWindow().getScreenHeight();
+        int height = ((ScreenAccessor)gui).port_lib$getMinecraft().getWindow().getScreenHeight();
         if (height <= 0) {
             return 0;
         }
-        return (int) gui.getMinecraft().mouseHandler.ypos() * gui.height / height;
+        return (int) ((ScreenAccessor)gui).port_lib$getMinecraft().mouseHandler.ypos() * gui.height / height;
     }
 
 }

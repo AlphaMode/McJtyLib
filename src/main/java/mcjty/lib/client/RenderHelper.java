@@ -8,8 +8,11 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import com.mojang.math.Vector4f;
+import io.github.fabricators_of_create.porting_lib.extensions.AbstractTextureExtensions;
 import io.github.fabricators_of_create.porting_lib.model.IVertexConsumer;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import mcjty.lib.base.StyleConfig;
+import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
@@ -31,8 +34,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.generators.ModelBuilder;
-import net.minecraftforge.client.model.pipeline.IVertexConsumer;
-import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nullable;
 
@@ -198,16 +199,12 @@ public class RenderHelper {
             return false;
         }
 
-        ResourceLocation fluidStill = fluid.getAttributes().getStillTexture();
-        TextureAtlasSprite fluidStillSprite = null;
-        if (fluidStill != null) {
-            fluidStillSprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(fluidStill);
-        }
+        TextureAtlasSprite fluidStillSprite = FluidVariantRendering.getSprite(fluidStack.getType());
         if (fluidStillSprite == null) {
             return false;
         }
 
-        int fluidColor = fluid.getAttributes().getColor(fluidStack);
+        int fluidColor = FluidVariantRendering.getColor(fluidStack.getType());
         RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
 //        Minecraft.getInstance().getEntityRenderDispatcher().textureManager.bindForSetup(InventoryMenu.BLOCK_ATLAS);
         setGLColorFromInt(fluidColor);
@@ -290,7 +287,7 @@ public class RenderHelper {
                 GlStateManager._disableBlend();
                 RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
 //                Minecraft.getInstance().getTextureManager().bindForSetup(InventoryMenu.BLOCK_ATLAS);
-                Minecraft.getInstance().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).restoreLastBlurMipmap();
+                ((AbstractTextureExtensions)Minecraft.getInstance().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS)).restoreLastBlurMipmap();
             }
         }
 

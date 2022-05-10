@@ -3,6 +3,8 @@ package mcjty.lib.debugtools;
 import com.google.gson.*;
 import mcjty.lib.network.PacketDumpBlockInfo;
 import mcjty.lib.varia.Logging;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.player.Player;
@@ -10,7 +12,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.simple.SimpleChannel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,7 +29,7 @@ public class DumpBlockNBT {
         Block block = state.getBlock();
 
         JsonObject jsonObject = new JsonObject();
-        jsonObject.add("block", new JsonPrimitive(block.getRegistryName().toString()));
+        jsonObject.add("block", new JsonPrimitive(Registry.BLOCK.getKey(block).toString()));
         if (te != null) {
             jsonObject.add("teClass", new JsonPrimitive(te.getClass().getCanonicalName()));
             CompoundTag tag = te.saveWithoutMetadata();

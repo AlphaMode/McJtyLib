@@ -1,23 +1,23 @@
 package mcjty.lib.container;
 
+import io.github.fabricators_of_create.porting_lib.extensions.SlotExtensions;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.varia.TriConsumer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
 
-public class CraftingSlot extends SlotItemHandler {
+public class CraftingSlot extends SlotItemHandler implements SlotExtensions {
     private final GenericTileEntity te;
     private final Player player;
     private TriConsumer<BlockEntity, Player, ItemStack> onCraft = (container, playerEntity, stack) -> {};
     private int removeCount;
 
-    public CraftingSlot(Player playerEntity, IItemHandler inventory, GenericTileEntity te, int index, int x, int y) {
+    public CraftingSlot(Player playerEntity, ItemStackHandler inventory, GenericTileEntity te, int index, int x, int y) {
         super(inventory, index, x, y);
         this.te = te;
         this.player = playerEntity;
@@ -75,6 +75,6 @@ public class CraftingSlot extends SlotItemHandler {
         onCraft.accept(te, player, stack);
 
         this.removeCount = 0;
-        ForgeEventFactory.firePlayerSmeltedEvent(this.player, stack);
+//        ForgeEventFactory.firePlayerSmeltedEvent(this.player, stack); TODO: EVENT
     }
 }
