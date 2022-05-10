@@ -10,6 +10,7 @@ repositories {
     maven { url 'https://mvn.devos.one/snapshots/' }
     maven { url = "https://cursemaven.com" }
     maven { url = "https://jitpack.io/" }
+    maven { url = "https://maven.parchmentmc.org" }
     maven { // REI
         url "https://maven.shedaniel.me/"
     }
