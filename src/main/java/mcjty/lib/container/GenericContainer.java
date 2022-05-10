@@ -1,6 +1,9 @@
 package mcjty.lib.container;
 
 import com.google.common.collect.Range;
+import io.github.fabricators_of_create.porting_lib.extensions.SlotExtensions;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import mcjty.lib.McJtyLib;
@@ -11,7 +14,12 @@ import mcjty.lib.network.PacketContainerDataToClient;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.varia.LevelTools;
 import mcjty.lib.varia.Logging;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.impl.screenhandler.ExtendedScreenHandlerType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
@@ -23,12 +31,6 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.SlotItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
-import net.minecraftforge.network.NetworkDirection;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,7 +43,7 @@ import java.util.function.Supplier;
  * Generic container support
  */
 public class GenericContainer extends AbstractContainerMenu implements IGenericContainer {
-    protected final Map<String,IItemHandler> inventories = new HashMap<>();
+    protected final Map<String, ItemStackHandler> inventories = new HashMap<>();
     private final Map<ResourceLocation, IContainerDataListener> containerData = new HashMap<>();
     private final ContainerFactory factory;
     protected final BlockPos pos;
@@ -145,7 +147,7 @@ public class GenericContainer extends AbstractContainerMenu implements IGenericC
         this.containerData.put(data.getId(), data);
     }
 
-    public void addInventory(String name, @Nullable IItemHandler inventory) {
+    public void addInventory(String name, @Nullable Storage<ItemVariant> inventory) {
         if (inventory != null) {
             inventories.put(name, inventory);
         }
@@ -155,7 +157,7 @@ public class GenericContainer extends AbstractContainerMenu implements IGenericC
         return pos;
     }
 
-    public IItemHandler getInventory(String name) {
+    public Storage<ItemVariant> getInventory(String name) {
         return inventories.get(name);
     }
 
@@ -173,14 +175,14 @@ public class GenericContainer extends AbstractContainerMenu implements IGenericC
 
     @Nullable
     public Slot getSlotByInventoryAndIndex(String name, int index) {
-        IItemHandler inv = inventories.get(name);
+        Storage<ItemVariant> inv = inventories.get(name);
         if (inv == null) {
             return null;
         }
         for (Slot slot : slots) {
             if (slot instanceof SlotItemHandler) {
-                IItemHandler itemHandler = ((SlotItemHandler) slot).getItemHandler();
-                if (itemHandler == inv && slot.getSlotIndex() == index) {
+                ItemStackHandler itemHandler = ((SlotItemHandler) slot).getItemHandler();
+                if (itemHandler == inv && ((SlotExtensions)slot).getSlotIndex() == index) {
                     return slot;
                 }
             }
@@ -189,15 +191,15 @@ public class GenericContainer extends AbstractContainerMenu implements IGenericC
     }
 
     @Override
-    public void setupInventories(IItemHandler itemHandler, Inventory inventory) {
+    public void setupInventories(Storage<ItemVariant> itemHandler, Inventory inventory) {
         addInventory(ContainerFactory.CONTAINER_CONTAINER, itemHandler);
-        addInventory(ContainerFactory.CONTAINER_PLAYER, new InvWrapper(inventory));
+        addInventory(ContainerFactory.CONTAINER_PLAYER, PlayerInventoryStorage.of(inventory));
         generateSlots(inventory.player);
     }
 
     public void generateSlots(Player player) {
         for (SlotFactory slotFactory : factory.getSlots()) {
-            IItemHandler inventory = inventories.get(slotFactory.inventoryName());
+            ItemStackHandler inventory = inventories.get(slotFactory.inventoryName());
             int index = slotFactory.index();
             int x = slotFactory.x();
             int y = slotFactory.y();
@@ -207,7 +209,7 @@ public class GenericContainer extends AbstractContainerMenu implements IGenericC
         }
     }
 
-    protected Slot createSlot(SlotFactory slotFactory, Player playerEntity, final IItemHandler inventory, final int index, final int x, final int y, SlotType slotType) {
+    protected Slot createSlot(SlotFactory slotFactory, Player playerEntity, final ItemStackHandler inventory, final int index, final int x, final int y, SlotType slotType) {
         Slot slot;
         if (slotType == SlotType.SLOT_GHOST) {
             slot = new GhostSlot(inventory, index, x, y);
@@ -493,34 +495,33 @@ public class GenericContainer extends AbstractContainerMenu implements IGenericC
     }
 
     public static MenuType<AbstractContainerMenu> createContainerType(String registryName) {
-        MenuType<AbstractContainerMenu> containerType = IForgeMenuType.create((windowId, inv, data) -> {
+        MenuType<AbstractContainerMenu> containerType = new ExtendedScreenHandlerType<>(((windowId, inv, data) -> {
             BlockPos pos = data.readBlockPos();
             BlockEntity te = inv.player.getCommandSenderWorld().getBlockEntity(pos);
             if (te == null) {
                 throw new IllegalStateException("Something went wrong getting the GUI");
             }
             return te.getCapability(CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY).map(h -> Objects.requireNonNull(h.createMenu(windowId, inv, inv.player))).orElseThrow(RuntimeException::new);
-        });
-        containerType.setRegistryName(registryName);
-        return containerType;
+        }));
+        return Registry.register(Registry.MENU, registryName, containerType);
     }
 
     public static <T extends AbstractContainerMenu> MenuType<T> createContainerType() {
-        MenuType<AbstractContainerMenu> containerType = IForgeMenuType.create((windowId, inv, data) -> {
+        MenuType<AbstractContainerMenu> containerType = new ExtendedScreenHandlerType<>(((windowId, inv, data) -> {
             BlockPos pos = data.readBlockPos();
             BlockEntity te = inv.player.getCommandSenderWorld().getBlockEntity(pos);
             if (te == null) {
                 throw new IllegalStateException("Something went wrong getting the GUI");
             }
             return te.getCapability(CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY).map(h -> Objects.requireNonNull(h.createMenu(windowId, inv, inv.player))).orElseThrow(RuntimeException::new);
-        });
+        }));
         return (MenuType<T>) containerType;
     }
 
     public static <T extends GenericContainer, E extends GenericTileEntity> MenuType<T> createRemoteContainerType(
             BiFunction<ResourceKey<Level>, BlockPos, E> dummyTEFactory,
             ContainerSupplier<T, E> containerFactory, int slots) {
-        return IForgeMenuType.create((windowId, inv, data) -> {
+        return new ExtendedScreenHandlerType<>(((windowId, inv, data) -> {
             BlockPos pos = data.readBlockPos();
 
             E te = dummyTEFactory.apply(LevelTools.getId(data.readResourceLocation()), pos);
@@ -530,7 +531,7 @@ public class GenericContainer extends AbstractContainerMenu implements IGenericC
             T container = containerFactory.create(windowId, pos, te, inv.player);
             container.setupInventories(new ItemStackHandler(slots), inv);
             return container;
-        });
+        }));
     }
 
     public interface ContainerSupplier<T extends GenericContainer, E extends GenericTileEntity> {

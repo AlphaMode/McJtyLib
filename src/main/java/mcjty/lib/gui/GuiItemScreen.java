@@ -1,13 +1,14 @@
 package mcjty.lib.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.fabricators_of_create.porting_lib.mixin.client.accessor.ScreenAccessor;
 import mcjty.lib.client.GuiTools;
+import me.pepperbell.simplenetworking.SimpleChannel;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ public class GuiItemScreen extends Screen {
         super.init();
         guiLeft = (this.width - xSize) / 2;
         guiTop = (this.height - ySize) / 2;
-        sideWindow.initGui(getMinecraft(), this, guiLeft, guiTop, xSize, ySize);
+        sideWindow.initGui(((ScreenAccessor)this).port_lib$getMinecraft(), this, guiLeft, guiTop, xSize, ySize);
     }
 
     @Override

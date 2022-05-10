@@ -1,30 +1,31 @@
 package mcjty.lib.network;
 
-import io.netty.buffer.ByteBuf;
 import mcjty.lib.debugtools.DumpItemNBT;
 import mcjty.lib.varia.Logging;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
+import me.pepperbell.simplenetworking.C2SPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.players.ServerOpListEntry;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.players.ServerOpList;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.server.players.ServerOpListEntry;
+import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.Level;
-
-import java.util.function.Supplier;
 
 /**
  * Debug packet to dump item info
  */
-public class PacketDumpItemInfo {
+public class PacketDumpItemInfo implements C2SPacket {
 
     private final boolean verbose;
 
-    public void toBytes(ByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeBoolean(verbose);
     }
 
-    public PacketDumpItemInfo(ByteBuf buf) {
+    public PacketDumpItemInfo(FriendlyByteBuf buf) {
         verbose = buf.readBoolean();
     }
 
@@ -32,10 +33,8 @@ public class PacketDumpItemInfo {
         this.verbose = verbose;
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
-            ServerPlayer player = ctx.getSender();
+    public void handle(MinecraftServer mcServer, ServerPlayer player, ServerGamePacketListenerImpl handler, SimpleChannel.ResponseTarget responseTarget) {
+        mcServer.execute(() -> {
             MinecraftServer server = player.getCommandSenderWorld().getServer();
             ServerOpList oppedPlayers = server.getPlayerList().getOps();
             ServerOpListEntry entry = oppedPlayers.get(player.getGameProfile());
@@ -49,6 +48,5 @@ public class PacketDumpItemInfo {
                 }
             }
         });
-        ctx.setPacketHandled(true);
     }
 }

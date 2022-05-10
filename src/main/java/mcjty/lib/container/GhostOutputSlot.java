@@ -1,15 +1,15 @@
 package mcjty.lib.container;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
 
 public class GhostOutputSlot extends SlotItemHandler {
 
-    public GhostOutputSlot(IItemHandler inventory, int index, int x, int y) {
+    public GhostOutputSlot(ItemStackHandler inventory, int index, int x, int y) {
         super(inventory, index, x, y);
     }
 

@@ -1,20 +1,21 @@
 package mcjty.lib.client;
 
+import io.github.fabricators_of_create.porting_lib.model.BakedQuadBuilder;
+import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.model.data.IDynamicBakedModel;
-import net.minecraftforge.client.model.pipeline.BakedQuadBuilder;
 
 import javax.annotation.Nonnull;
 
-public abstract class AbstractDynamicBakedModel implements IDynamicBakedModel {
+public abstract class AbstractDynamicBakedModel implements BakedModel, FabricBakedModel {
 
     @Override
     public boolean usesBlockLight() {

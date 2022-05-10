@@ -1,30 +1,31 @@
 package mcjty.lib.network;
 
 import mcjty.lib.debugtools.DumpBlockNBT;
-import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.LevelTools;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.players.ServerOpListEntry;
-import net.minecraft.server.players.ServerOpList;
-import net.minecraft.resources.ResourceKey;
+import mcjty.lib.varia.Logging;
+import me.pepperbell.simplenetworking.C2SPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.server.players.ServerOpList;
+import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 /**
  * Debug packet to dump block info
  */
-public class PacketDumpBlockInfo {
+public class PacketDumpBlockInfo implements C2SPacket {
 
     private final ResourceKey<Level> dimid;
     private final BlockPos pos;
     private final boolean verbose;
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeResourceLocation(dimid.location());
         buf.writeBlockPos(pos);
         buf.writeBoolean(verbose);
@@ -42,10 +43,8 @@ public class PacketDumpBlockInfo {
         this.verbose = verbose;
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
-            ServerPlayer player = ctx.getSender();
+    public void handle(MinecraftServer mcServer, ServerPlayer player, ServerGamePacketListenerImpl handler, SimpleChannel.ResponseTarget responseTarget) {
+        mcServer.execute(() -> {
             MinecraftServer server = player.getCommandSenderWorld().getServer();
             ServerOpList oppedPlayers = server.getPlayerList().getOps();
             ServerOpListEntry entry = oppedPlayers.get(player.getGameProfile());
@@ -57,6 +56,5 @@ public class PacketDumpBlockInfo {
                 Logging.getLogger().log(org.apache.logging.log4j.Level.INFO, output);
             }
         });
-        ctx.setPacketHandled(true);
     }
 }

@@ -1,17 +1,18 @@
 package mcjty.lib.container;
 
+import io.github.fabricators_of_create.porting_lib.extensions.SlotExtensions;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
 import mcjty.lib.tileentity.GenericTileEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
 
-public class BaseSlot extends SlotItemHandler {
+public class BaseSlot extends SlotItemHandler implements SlotExtensions {
 
     private final GenericTileEntity te;
 
-    public BaseSlot(IItemHandler inventory, GenericTileEntity te, int index, int x, int y) {
+    public BaseSlot(ItemStackHandler inventory, GenericTileEntity te, int index, int x, int y) {
         super(inventory, index, x, y);
         this.te = te;
     }

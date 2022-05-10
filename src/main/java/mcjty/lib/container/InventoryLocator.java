@@ -1,15 +1,15 @@
 package mcjty.lib.container;
 
+import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
+import mcjty.lib.fabric.TransferHelper;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nonnull;
 
@@ -23,7 +23,7 @@ public class InventoryLocator {
     private Direction inventorySide = null;
 
     @Nonnull
-    private LazyOptional<IItemHandler> getItemHandlerAtDirection(Level worldObj, BlockPos thisCoordinate, Direction direction) {
+    private LazyOptional<Storage<ItemVariant>> getItemHandlerAtDirection(Level worldObj, BlockPos thisCoordinate, Direction direction) {
         if (direction == null) {
             if (inventoryCoordinate != null) {
                 return getItemHandlerAtCoordinate(worldObj, inventoryCoordinate, inventorySide);
@@ -34,7 +34,7 @@ public class InventoryLocator {
         if (te == null) {
             return LazyOptional.empty();
         }
-        return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).map(handler -> {
+        return TransferHelper.getItemStorage(te, direction.getOpposite()).map(handler -> {
             // Remember in inventoryCoordinate (acts as a cache)
             inventoryCoordinate = thisCoordinate.relative(direction);
             inventorySide = direction.getOpposite();
@@ -43,12 +43,12 @@ public class InventoryLocator {
     }
 
     @Nonnull
-    private LazyOptional<IItemHandler> getItemHandlerAtCoordinate(Level worldObj, BlockPos c, Direction direction) {
+    private LazyOptional<Storage<ItemVariant>> getItemHandlerAtCoordinate(Level worldObj, BlockPos c, Direction direction) {
         BlockEntity te = worldObj.getBlockEntity(c);
         if (te == null) {
             return LazyOptional.empty();
         }
-        return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction);
+        return TransferHelper.getItemStorage(te, direction);
     }
 
 
@@ -58,7 +58,7 @@ public class InventoryLocator {
                 break;
             }
             ItemStack finalStack = stack;
-            stack = getItemHandlerAtDirection(worldObj, thisCoordinate, dir).map(handler -> ItemHandlerHelper.insertItem(handler, finalStack, false)).orElse(stack);
+            stack = getItemHandlerAtDirection(worldObj, thisCoordinate, dir).map(handler -> TransferHelper.quickInsert(handler, finalStack, false)).orElse(stack);
         }
 
         if (!stack.isEmpty()) {
