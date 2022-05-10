@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "mcjtylib",
+  "version": "${file.jarVersion}",
+
+  "name": "McJtyLib",
+  "description": "Base mod for all McJty mods",
+  "authors": [
+    "McJty",
+    "AlphaMode"
+  ],
+  "contact": {
+    "issues": "http://github.com/McJtyMods/McJtyLib/issues",
+    "sources": "https://github.com/Fabricators-of-Create/Create"
+  },
+
+  "license": "MIT License https://github.com/McJtyMods/McJtyLib/blob/1.18/LICENCE",
+  "icon": "logo.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "mcjty.lib.McJtyLib"
+    ],
+    "client": [
+      "mcjty.lib.client.ClientSetup"
+    ],
+    "fabric-datagen": [
+      "com.simibubi.create.CreateData"
+    ],
+    "rei": [
+      "com.simibubi.create.compat.rei.CreateREI"
+    ]
+  },
+
+  "mixins": [ "create.mixins.json" ],
+  "accessWidener": "create.accesswidener",
+
+  "/* you need to enable this if you want to run datagen because yes */ provides": [
+    "com_electronwill_night-config_core",
+    "com_electronwill_night-config_toml"
+  ],
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/class_1688": ["com/simibubi/create/foundation/utility/fabric/AbstractMinecartExtensions"]
+    }
+  }
+}

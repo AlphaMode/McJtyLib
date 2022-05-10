@@ -1,5 +1,6 @@
 package mcjty.lib.client;
 
+import io.github.fabricators_of_create.porting_lib.util.NetworkUtil;
 import mcjty.lib.api.container.CapabilityContainerProvider;
 import mcjty.lib.varia.LevelTools;
 import net.minecraft.ChatFormatting;
@@ -18,7 +19,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -89,7 +89,7 @@ public class GuiTools {
 
         CompoundTag written = te.saveWithoutMetadata();
 
-        NetworkHooks.openGui((ServerPlayer) player, provider.apply(te), buf -> {
+        NetworkUtil.openGui((ServerPlayer) player, provider.apply(te), buf -> {
             buf.writeBlockPos(pos);
             buf.writeResourceLocation(world.dimension().location());
             buf.writeNbt(written);

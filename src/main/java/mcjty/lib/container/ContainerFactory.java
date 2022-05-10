@@ -1,7 +1,6 @@
 package mcjty.lib.container;
 
-import net.minecraftforge.common.util.Lazy;
-
+import io.github.fabricators_of_create.porting_lib.util.Lazy;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;

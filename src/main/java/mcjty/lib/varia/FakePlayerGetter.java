@@ -5,7 +5,6 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.common.util.FakePlayerFactory;
 
 import java.util.Objects;
 import java.util.UUID;

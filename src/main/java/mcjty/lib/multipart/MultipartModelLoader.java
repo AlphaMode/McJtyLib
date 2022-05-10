@@ -3,6 +3,10 @@ package mcjty.lib.multipart;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
+import io.github.fabricators_of_create.porting_lib.model.IModelConfiguration;
+import io.github.fabricators_of_create.porting_lib.model.IModelGeometry;
+import io.github.fabricators_of_create.porting_lib.model.IModelLoader;
+import io.github.fabricators_of_create.porting_lib.model.ModelLoaderRegistry;
 import mcjty.lib.McJtyLib;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -28,7 +32,7 @@ import net.minecraft.client.resources.model.UnbakedModel;
 
 public class MultipartModelLoader implements IModelLoader<MultipartModelLoader.MultipartModelGeometry> {
 
-    public static void register(ModelRegistryEvent event) {
+    public static void register() {
         ModelLoaderRegistry.registerLoader(new ResourceLocation(McJtyLib.MODID, "multipartloader"), new MultipartModelLoader());
     }
 

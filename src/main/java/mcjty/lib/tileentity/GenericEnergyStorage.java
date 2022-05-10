@@ -6,8 +6,9 @@ import net.minecraft.nbt.LongTag;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.energy.IEnergyStorage;
+import team.reborn.energy.api.EnergyStorage;
 
-public class GenericEnergyStorage implements IEnergyStorage, INBTSerializable<LongTag> {
+public class GenericEnergyStorage implements EnergyStorage, INBTSerializable<LongTag> {
 
     private final GenericTileEntity tileEntity;
     private final boolean isReceiver;

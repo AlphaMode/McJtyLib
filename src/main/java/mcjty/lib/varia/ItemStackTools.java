@@ -1,7 +1,9 @@
 package mcjty.lib.varia;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import mcjty.lib.fabric.TransferHelper;
 import mcjty.lib.gui.GuiParser;
+import me.alphamode.forgetags.Tags;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
@@ -33,7 +35,7 @@ public class ItemStackTools {
         if (tileEntity == null) {
             return ItemStack.EMPTY;
         }
-        return tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+        return TransferHelper.getItemStorage(tileEntity)
                 .map(handler -> handler.extractItem(slot, amount, false))
                 .orElse(ItemStack.EMPTY);
     }
@@ -53,7 +55,7 @@ public class ItemStackTools {
 
     public static GuiParser.GuiCommand itemStackToGuiCommand(String name, ItemStack item) {
         GuiParser.GuiCommand object = new GuiParser.GuiCommand(name);
-        object.parameter(item.getItem().getRegistryName().toString());
+        object.parameter(Registry.ITEM.getKey(item.getItem()).toString());
         object.parameter(item.getCount());
         if (item.hasTag()) {
             String string = item.getTag().toString();
@@ -64,7 +66,7 @@ public class ItemStackTools {
 
     public static ItemStack guiCommandToItemStack(GuiParser.GuiCommand obj) {
         String itemName = obj.getOptionalPar(0, "minecraft:stick");
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
+        Item item = Registry.ITEM.get(new ResourceLocation(itemName));
         int amount = obj.getOptionalPar(1, 1);
         ItemStack stack = new ItemStack(item, amount);
         obj.findCommand("tag").ifPresent(cmd -> {

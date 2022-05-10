@@ -47,7 +47,7 @@ public class MultipartBakedModel extends AbstractDynamicBakedModel {
             for (Map.Entry<PartSlot, MultipartTE.Part> entry : parts.entrySet()) {
                 MultipartTE.Part part = entry.getValue();
                 BlockState blockState = part.getState();
-                if (layer == null || ItemBlockRenderTypes.canRenderInLayer(blockState, layer)) {
+                if (layer == null || ItemBlockRenderTypes.getChunkRenderType(blockState) == layer) {
                     BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(blockState);
                     try {
                         if (!(model instanceof MultipartBakedModel)) {  // @todo safety

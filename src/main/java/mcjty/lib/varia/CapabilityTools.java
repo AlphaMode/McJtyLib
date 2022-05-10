@@ -1,24 +1,25 @@
 package mcjty.lib.varia;
 
-import net.minecraft.world.level.block.entity.BlockEntity;
+import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
+import mcjty.lib.fabric.TransferHelper;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nonnull;
 
 public class CapabilityTools {
 
     @Nonnull
-    public static LazyOptional<IItemHandler> getItemCapabilitySafe(BlockEntity tileEntity) {
+    public static LazyOptional<Storage<ItemVariant>> getItemCapabilitySafe(BlockEntity tileEntity) {
         if (tileEntity == null) {
             return LazyOptional.empty();
         }
         try {
-            return tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
+            return TransferHelper.getItemStorage(tileEntity);
         } catch (RuntimeException e) {
             reportWrongBlock(tileEntity, e);
             return LazyOptional.empty();
@@ -26,12 +27,12 @@ public class CapabilityTools {
     }
 
     @Nonnull
-    public static LazyOptional<IFluidHandler> getFluidCapabilitySafe(BlockEntity tileEntity) {
+    public static LazyOptional<Storage<FluidVariant>> getFluidCapabilitySafe(BlockEntity tileEntity) {
         if (tileEntity == null) {
             return LazyOptional.empty();
         }
         try {
-            return tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
+            return TransferHelper.getFluidStorage(tileEntity);
         } catch (RuntimeException e) {
             reportWrongBlock(tileEntity, e);
             return LazyOptional.empty();
@@ -40,7 +41,7 @@ public class CapabilityTools {
 
     private static void reportWrongBlock(BlockEntity tileEntity, Exception e) {
         if (tileEntity != null) {
-            ResourceLocation name = tileEntity.getLevel().getBlockState(tileEntity.getBlockPos()).getBlock().getRegistryName();
+            ResourceLocation name = Registry.BLOCK.getKey(tileEntity.getLevel().getBlockState(tileEntity.getBlockPos()).getBlock());
             Logging.logError("Block " + name.toString() + " at " + BlockPosTools.toString(tileEntity.getBlockPos()) + " does not respect the capability API and crashes on null side.");
             Logging.logError("Please report to the corresponding mod. This is not a bug in RFTools!");
         }

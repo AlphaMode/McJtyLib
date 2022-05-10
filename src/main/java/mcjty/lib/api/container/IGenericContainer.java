@@ -1,9 +1,10 @@
 package mcjty.lib.api.container;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DataSlot;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 
@@ -15,7 +16,7 @@ public interface IGenericContainer {
 
     void addContainerDataListener(IContainerDataListener dataListener);
 
-    void setupInventories(@Nullable IItemHandler itemHandler, Inventory inventory);
+    void setupInventories(@Nullable Storage<ItemVariant> itemHandler, Inventory inventory);
 
     AbstractContainerMenu getAsContainer();
 }

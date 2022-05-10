@@ -5,16 +5,19 @@ import mcjty.lib.keys.KeyBindings;
 import mcjty.lib.keys.KeyInputHandler;
 import mcjty.lib.tooltips.ClientTooltipIcon;
 import mcjty.lib.tooltips.TooltipRender;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-public class ClientSetup {
+public class ClientSetup implements ClientModInitializer {
 
-    public static void init(FMLClientSetupEvent e) {
+    @Override
+    public void onInitializeClient() {
         MinecraftForgeClient.registerTooltipComponentFactory(ClientTooltipIcon.class, (a) -> a);
-        MinecraftForge.EVENT_BUS.register(new TooltipRender());
+        ItemTooltipCallback.EVENT.register(TooltipRender::onMakeTooltip);
         MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
 
         KeyBindings.init();

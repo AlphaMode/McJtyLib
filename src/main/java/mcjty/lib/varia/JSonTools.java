@@ -5,12 +5,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.core.Registry;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -117,7 +117,7 @@ public class JSonTools {
 
     public static JsonObject itemStackToJson(ItemStack item) {
         JsonObject object = new JsonObject();
-        object.add("item", new JsonPrimitive(item.getItem().getRegistryName().toString()));
+        object.add("item", new JsonPrimitive(Registry.ITEM.getKey(item.getItem()).toString()));
         if (item.getCount() != 1) {
             object.add("amount", new JsonPrimitive(item.getCount()));
         }
@@ -130,7 +130,7 @@ public class JSonTools {
 
     public static ItemStack jsonToItemStack(JsonObject obj) {
         String itemName = obj.get("item").getAsString();
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
+        Item item = Registry.ITEM.get(new ResourceLocation(itemName));
         // @todo error checking
         int amount = 1;
         if (obj.has("amount")) {

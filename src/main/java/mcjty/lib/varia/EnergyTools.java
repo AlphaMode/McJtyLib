@@ -3,6 +3,7 @@ package mcjty.lib.varia;
 import mcjty.lib.McJtyLib;
 import mcjty.lib.api.power.IBigPower;
 import mcjty.lib.compat.TeslaCompatibility;
+import mcjty.lib.fabric.TransferHelper;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -10,7 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.energy.CapabilityEnergy;
+import team.reborn.energy.api.EnergyStorageUtil;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,7 +28,7 @@ public class EnergyTools {
         if (McJtyLib.tesla && TeslaCompatibility.isEnergyHandler(te, side)) {
             return true;
         }
-        return te.getCapability(CapabilityEnergy.ENERGY, side).isPresent();
+        return TransferHelper.getEnergyStorage(te, side).isPresent();
     }
 
     public static boolean isEnergyItem(ItemStack stack) {
@@ -38,7 +39,7 @@ public class EnergyTools {
         if (McJtyLib.tesla && TeslaCompatibility.isEnergyItem(stack)) {
             return true;
         }
-        return stack.getCapability(CapabilityEnergy.ENERGY).isPresent();
+        return EnergyStorageUtil.isEnergyStorage(stack);
     }
 
     // Get energy level with possible support for multiblocks (like EnderIO capacitor bank).
@@ -52,7 +53,7 @@ public class EnergyTools {
             maxEnergyStored = TeslaCompatibility.getMaxEnergy(tileEntity, side);
             energyStored = TeslaCompatibility.getEnergy(tileEntity, side);
         } else if (tileEntity != null) {
-            return tileEntity.getCapability(CapabilityEnergy.ENERGY, side).map(h -> new EnergyLevel(h.getEnergyStored(), h.getMaxEnergyStored())).orElse(new EnergyLevel(0, 0));
+            return TransferHelper.getEnergyStorage(tileEntity, side).map(h -> new EnergyLevel(h.getAmount(), h.getCapacity())).orElse(new EnergyLevel(0, 0));
         } else {
             maxEnergyStored = 0;
             energyStored = 0;
@@ -67,9 +68,9 @@ public class EnergyTools {
             maxEnergyStored.set(TeslaCompatibility.getMaxEnergy(tileEntity, side));
             energyStored.set(TeslaCompatibility.getEnergy(tileEntity, side));
         } else if (tileEntity != null) {
-            tileEntity.getCapability(CapabilityEnergy.ENERGY, side).ifPresent(handler -> {
-                maxEnergyStored.set(handler.getMaxEnergyStored());
-                energyStored.set(handler.getEnergyStored());
+            TransferHelper.getEnergyStorage(tileEntity, side).ifPresent(handler -> {
+                maxEnergyStored.set(handler.getCapacity());
+                energyStored.set(handler.getAmount());
             });
         } else {
             maxEnergyStored.set(0);
@@ -82,8 +83,8 @@ public class EnergyTools {
         if (McJtyLib.tesla && TeslaCompatibility.isEnergyReceiver(tileEntity, from)) {
             return TeslaCompatibility.receiveEnergy(tileEntity, from, maxReceive);
         } else if (tileEntity != null) {
-            return tileEntity.getCapability(CapabilityEnergy.ENERGY, from).map(handler ->
-                    handler.receiveEnergy(unsignedClampToInt(maxReceive), false)).orElse(0);
+            return TransferHelper.getEnergyStorage(tileEntity, from).map(handler ->
+                    TransferHelper.quickInsert(handler, maxReceive, false)).orElse(0L);
         }
         return 0;
     }
@@ -95,8 +96,8 @@ public class EnergyTools {
         } else if (McJtyLib.tesla && TeslaCompatibility.isEnergyItem(stack)) {
             return TeslaCompatibility.receiveEnergy(stack, maxReceive, false);
         } else {
-            return stack.getCapability(CapabilityEnergy.ENERGY).map(handler ->
-                    handler.receiveEnergy(unsignedClampToInt(maxReceive), false)).orElse(0);
+            return TransferHelper.getEnergyStorage(stack).map(handler ->
+                    TransferHelper.quickInsert(handler, maxReceive, false)).orElse(0L);
         }
     }
 

@@ -1,5 +1,6 @@
 package mcjty.lib;
 
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 import mcjty.lib.base.GeneralConfig;
 import mcjty.lib.blockcommands.CommandInfo;
 import mcjty.lib.multipart.MultipartModelLoader;
@@ -9,6 +10,9 @@ import mcjty.lib.setup.ClientSetup;
 import mcjty.lib.setup.ModSetup;
 import mcjty.lib.syncpositional.PositionalDataSyncer;
 import mcjty.lib.typed.TypedMap;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.ModInitializer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -26,8 +30,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-@Mod(McJtyLib.MODID)
-public class McJtyLib {
+public class McJtyLib implements ModInitializer {
 
     public static final String MODID = "mcjtylib";
 
@@ -45,11 +48,12 @@ public class McJtyLib {
 
     public static final PositionalDataSyncer SYNCER = new PositionalDataSyncer();
 
-    public McJtyLib() {
+    @Override
+    public void onInitialize() {
         instance = this;
         // Register the setup method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(setup::init);
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+        EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
             FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientSetup::init);
             FMLJavaModLoadingContext.get().getModEventBus().addListener(MultipartModelLoader::register);
         });

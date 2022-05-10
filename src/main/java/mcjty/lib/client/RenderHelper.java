@@ -8,6 +8,7 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import com.mojang.math.Vector4f;
+import io.github.fabricators_of_create.porting_lib.model.IVertexConsumer;
 import mcjty.lib.base.StyleConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

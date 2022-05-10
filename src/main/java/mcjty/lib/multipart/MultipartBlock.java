@@ -6,6 +6,7 @@ import mcjty.lib.compat.theoneprobe.TOPDriver;
 import mcjty.lib.compat.theoneprobe.TOPInfoProvider;
 import mcjty.lib.compat.waila.WailaInfoProvider;
 import mcjty.lib.tileentity.GenericTileEntity;
+import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.EntityBlock;
@@ -35,7 +36,7 @@ import java.util.function.Function;
 
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
-public class MultipartBlock extends Block implements WailaInfoProvider, TOPInfoProvider, EntityBlock {
+public class MultipartBlock extends Block implements WailaInfoProvider, TOPInfoProvider, EntityBlock, BlockPickInteractionAware {
 
     public static final AABB AABB_EMPTY = new AABB(0, 0, 0, 0, 0, 0);
     public static final AABB AABB_CENTER = new AABB(.4, .4, .4, .6, .6, .6);
@@ -55,7 +56,7 @@ public class MultipartBlock extends Block implements WailaInfoProvider, TOPInfoP
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
+    public ItemStack getPickedStack(BlockState state, BlockGetter world, BlockPos pos, @Nullable Player player, @Nullable HitResult target) {
         MultipartTE.Part part = getHitPart(state, world, pos, player.getEyePosition(0), target.getLocation());
         if (part != null) {
             return new ItemStack(part.getState().getBlock().asItem());

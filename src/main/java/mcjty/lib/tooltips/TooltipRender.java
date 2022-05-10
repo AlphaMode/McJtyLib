@@ -14,6 +14,7 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -31,15 +32,12 @@ public class TooltipRender {
 
     public static ITooltipSettings lastUsedTooltipItem = null;
 
-    @SubscribeEvent
-    public void onMakeTooltip(ItemTooltipEvent event) {
+    public static void onMakeTooltip(ItemStack stack, TooltipFlag context, List<Component> tooltip) {
         //This method extends the tooltip box size to fit the item's we will render in onDrawTooltip
         Minecraft mc = Minecraft.getInstance();
-        ItemStack stack = event.getItemStack();
         if (stack.getItem() instanceof ITooltipExtras extras) {
             List<Pair<ItemStack, Integer>> items = extras.getItems(stack);
             if (!items.isEmpty()) {
-                List<Component> tooltip = event.getToolTip();
                 int count = items.size();
                 int lines = (((count - 1) / STACKS_PER_LINE) + 1) * 2;
                 int width = Math.min(STACKS_PER_LINE, count) * 18;
@@ -66,8 +64,8 @@ public class TooltipRender {
     }
 
     @SubscribeEvent
-    public void onItemTooltipEvent(ItemTooltipEvent event) {
-        Item item = event.getItemStack().getItem();
+    public void onItemTooltipEvent(ItemStack stack, TooltipFlag context, List<Component> tooltip) {
+        Item item = stack.getItem();
         ITooltipSettings settings = getSettings(item);
         lastUsedTooltipItem = settings;
         if (settings != null) {
@@ -76,7 +74,7 @@ public class TooltipRender {
                 if (KeyBindings.openManual != null) {
                     if (!SafeClientTools.isSneaking()) {
                         String translationKey = KeyBindings.openManual.saveString();
-                        event.getToolTip().add(new TextComponent("<Press ").withStyle(ChatFormatting.YELLOW)
+                        tooltip.add(new TextComponent("<Press ").withStyle(ChatFormatting.YELLOW)
                                 .append(new TranslatableComponent(translationKey).withStyle(ChatFormatting.GREEN))
                                 .append(new TextComponent(" for help>").withStyle(ChatFormatting.YELLOW)));
                     }
