@@ -1,7 +1,10 @@
 package mcjty.lib.setup;
 
+import dev.onyxstudios.cca.api.v3.component.ComponentKey;
+import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents;
 import io.github.fabricators_of_create.porting_lib.event.common.PlayerTickEvents;
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 import mcjty.lib.McJtyLib;
 import mcjty.lib.api.container.CapabilityContainerProvider;
 import mcjty.lib.api.information.CapabilityPowerInformation;
@@ -14,8 +17,11 @@ import mcjty.lib.network.PacketHandler;
 import mcjty.lib.preferences.PreferencesDispatcher;
 import mcjty.lib.preferences.PreferencesProperties;
 import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.Entity;
@@ -37,7 +43,7 @@ public class ModSetup extends DefaultModSetup {
 
     public static boolean patchouli = false;
 
-    public static Capability<PreferencesProperties> PREFERENCES_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static ComponentKey<PreferencesProperties> PREFERENCES_CAPABILITY = ComponentRegistry.getOrCreate(PREFERENCES_CAPABILITY_KEY, PreferencesProperties.class);
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
@@ -52,6 +58,9 @@ public class ModSetup extends DefaultModSetup {
     public void init() {
         super.init();
         McJtyLib.networkHandler = new SimpleChannel(new ResourceLocation(MODID, MODID));
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
+            McJtyLib.networkHandler.initClientListener();
+        McJtyLib.networkHandler.initServerListener();
         PacketHandler.registerMessages(McJtyLib.networkHandler);
 //        MinecraftForge.EVENT_BUS.register(new EventHandler());
         McJtyLib.tesla = FabricLoader.getInstance().isModLoaded("tesla");
@@ -59,6 +68,7 @@ public class ModSetup extends DefaultModSetup {
 
         PlayerTickEvents.START.register(EventHandler::onPlayerTickEvent);
         BlockEvents.LEFT_CLICK_BLOCK.register(EventHandler::onPlayerInteract);
+        ServerTickEvents.START_WORLD_TICK.register(EventHandler::onWorldTick);
     }
 
     @Override
@@ -68,10 +78,9 @@ public class ModSetup extends DefaultModSetup {
 
     public static class EventHandler {
 
-        @SubscribeEvent
-        public static void onWorldTick(TickEvent.WorldTickEvent event) {
-            if (event.phase == TickEvent.Phase.START && event.world.dimension() == Level.OVERWORLD) {
-                McJtyLib.SYNCER.sendOutData(event.world.getServer());
+        public static void onWorldTick(ServerLevel world) {
+            if (world.dimension() == Level.OVERWORLD) {
+                McJtyLib.SYNCER.sendOutData(world.getServer());
             }
         }
 
@@ -82,7 +91,7 @@ public class ModSetup extends DefaultModSetup {
 
         public static void onPlayerTickEvent(Player player) {
             if (!player.getCommandSenderWorld().isClientSide) {
-                McJtyLib.getPreferencesProperties(event.player).ifPresent(handler -> handler.tick((ServerPlayer) event.player));
+                McJtyLib.getPreferencesProperties(player).ifPresent(handler -> handler.tick((ServerPlayer) player));
             }
         }
 

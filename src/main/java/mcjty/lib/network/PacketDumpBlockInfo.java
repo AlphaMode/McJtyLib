@@ -5,6 +5,7 @@ import mcjty.lib.varia.LevelTools;
 import mcjty.lib.varia.Logging;
 import me.pepperbell.simplenetworking.C2SPacket;
 import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
@@ -43,7 +44,8 @@ public class PacketDumpBlockInfo implements C2SPacket {
         this.verbose = verbose;
     }
 
-    public void handle(MinecraftServer mcServer, ServerPlayer player, ServerGamePacketListenerImpl handler, SimpleChannel.ResponseTarget responseTarget) {
+    @Override
+    public void handle(MinecraftServer mcServer, ServerPlayer player, ServerGamePacketListenerImpl listener, PacketSender responseSender, SimpleChannel channel) {
         mcServer.execute(() -> {
             MinecraftServer server = player.getCommandSenderWorld().getServer();
             ServerOpList oppedPlayers = server.getPlayerList().getOps();

@@ -1,29 +1,20 @@
 package mcjty.lib;
 
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
 import mcjty.lib.base.GeneralConfig;
 import mcjty.lib.blockcommands.CommandInfo;
-import mcjty.lib.multipart.MultipartModelLoader;
 import mcjty.lib.network.IServerCommand;
 import mcjty.lib.preferences.PreferencesProperties;
-import mcjty.lib.setup.ClientSetup;
 import mcjty.lib.setup.ModSetup;
 import mcjty.lib.syncpositional.PositionalDataSyncer;
 import mcjty.lib.typed.TypedMap;
 import me.pepperbell.simplenetworking.SimpleChannel;
-import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.ModLoadingContext;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.fml.event.config.ModConfigEvent;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;

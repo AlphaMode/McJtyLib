@@ -1,24 +1,26 @@
 package mcjty.lib.network;
 
 import mcjty.lib.varia.TriConsumer;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.simple.SimpleChannel;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.minecraft.world.entity.player.Player;
 
+import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
-import java.util.function.Supplier;
 
-public class ChannelBoundHandler<T> implements BiConsumer<T, Supplier<NetworkEvent.Context>> {
+public class ChannelBoundHandler<T> implements BiConsumer<T, ChannelBoundHandler.NetworkContext> {
     private final SimpleChannel channel;
-    private final TriConsumer<T, SimpleChannel, Supplier<NetworkEvent.Context>> innerHandler;
+    private final TriConsumer<T, SimpleChannel, NetworkContext> innerHandler;
 
-    public ChannelBoundHandler(SimpleChannel channel, TriConsumer<T, SimpleChannel, Supplier<NetworkEvent.Context>> innerHandler) {
+    public ChannelBoundHandler(SimpleChannel channel, TriConsumer<T, SimpleChannel, NetworkContext> innerHandler) {
         this.channel = channel;
         this.innerHandler = innerHandler;
     }
 
     @Override
-    public void accept(T message, Supplier<NetworkEvent.Context> ctx) {
+    public void accept(T message, NetworkContext ctx) {
         innerHandler.accept(message, channel, ctx);
     }
+
+    record NetworkContext(Executor executor, Player player) {}
 
 }

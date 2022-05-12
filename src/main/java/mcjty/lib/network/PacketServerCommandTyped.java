@@ -4,22 +4,23 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.LevelTools;
 import mcjty.lib.varia.Logging;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.resources.ResourceKey;
+import me.pepperbell.simplenetworking.C2SPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 /**
  * This is a packet that can be used to send a command from the client side (typically the GUI) to
  * a tile entity on the server side that implements CommandHandler. This will call 'execute()' on
  * that command handler.
  */
-public class PacketServerCommandTyped {
+public class PacketServerCommandTyped implements C2SPacket {
 
     private final BlockPos pos;
     private final ResourceKey<Level> dimensionId;
@@ -44,7 +45,8 @@ public class PacketServerCommandTyped {
         this.dimensionId = dimensionId;
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeUtf(command);
         TypedMapTools.writeArguments(buf, params);
@@ -56,10 +58,9 @@ public class PacketServerCommandTyped {
         }
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
-            Player playerEntity = ctx.getSender();
+    @Override
+    public void handle(MinecraftServer server, ServerPlayer playerEntity, ServerGamePacketListenerImpl listener, PacketSender responseSender, SimpleChannel channel) {
+        server.execute(() -> {
             Level world;
             if (dimensionId == null) {
                 world = playerEntity.getCommandSenderWorld();
@@ -78,6 +79,5 @@ public class PacketServerCommandTyped {
                 Logging.log("Command " + command + " was not handled!");
             }
         });
-        ctx.setPacketHandled(true);
     }
 }

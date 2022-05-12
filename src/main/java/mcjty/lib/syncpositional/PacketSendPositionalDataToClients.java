@@ -4,6 +4,7 @@ import mcjty.lib.McJtyLib;
 import mcjty.lib.varia.LevelTools;
 import me.pepperbell.simplenetworking.S2CPacket;
 import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.GlobalPos;
@@ -40,7 +41,7 @@ public class PacketSendPositionalDataToClients implements S2CPacket {
         data.toBytes(buf);
     }
 
-    public void handle(Minecraft client, ClientPacketListener handler, SimpleChannel.ResponseTarget responseTarget) {
+    public void handle(Minecraft client, ClientPacketListener handler, PacketSender responseSender, SimpleChannel channel) {
         client.execute(() -> {
             McJtyLib.SYNCER.handle(pos, data);
         });

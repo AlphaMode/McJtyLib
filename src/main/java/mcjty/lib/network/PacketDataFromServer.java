@@ -5,26 +5,30 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.SafeClientTools;
+import me.pepperbell.simplenetworking.S2CPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.network.NetworkEvent;
 
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
 
 /**
  * This packet is used (typically by PacketRequestDataFromServer) to send back a data to the client.
  */
 @SuppressWarnings("ALL")
-public class PacketDataFromServer {
+public class PacketDataFromServer implements S2CPacket {
     // Package visible for unittests
     BlockPos pos;
     TypedMap result;
     String command;
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         if (pos != null) {
             buf.writeBoolean(true);
             buf.writeBlockPos(pos);
@@ -60,9 +64,8 @@ public class PacketDataFromServer {
         this.result = result;
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    public void handle(Minecraft client, ClientPacketListener listener, PacketSender responseSender, SimpleChannel channel) {
+        client.execute(() -> {
             BlockEntity te;
             if (pos == null) {
                 // We are working from a tablet. Find the tile entity through the open container
@@ -84,7 +87,6 @@ public class PacketDataFromServer {
 
             Logging.log("Command " + command + " was not handled!");
         });
-        ctx.setPacketHandled(true);
     }
 
     private static GenericContainer getOpenContainer() {

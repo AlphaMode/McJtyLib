@@ -1,26 +1,29 @@
 package mcjty.lib.network;
 
-import io.netty.buffer.ByteBuf;
 import mcjty.lib.gui.BuffStyle;
 import mcjty.lib.gui.GuiStyle;
-import net.minecraftforge.network.NetworkEvent;
+import me.pepperbell.simplenetworking.S2CPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.network.FriendlyByteBuf;
 
-import java.util.function.Supplier;
-
-public class PacketSendPreferencesToClient {
+public class PacketSendPreferencesToClient implements S2CPacket {
     private final BuffStyle buffStyle;
     private final int buffX;
     private final int buffY;
     private final GuiStyle style;
 
-    public PacketSendPreferencesToClient(ByteBuf buf) {
+    public PacketSendPreferencesToClient(FriendlyByteBuf buf) {
         buffStyle = BuffStyle.values()[buf.readInt()];
         buffX = buf.readInt();
         buffY = buf.readInt();
         style = GuiStyle.values()[buf.readInt()];
     }
 
-    public void toBytes(ByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeInt(buffStyle.ordinal());
         buf.writeInt(buffX);
         buf.writeInt(buffY);
@@ -50,12 +53,11 @@ public class PacketSendPreferencesToClient {
         return style;
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    @Override
+    public void handle(Minecraft client, ClientPacketListener listener, PacketSender responseSender, SimpleChannel channel) {
+        client.execute(() -> {
             SendPreferencesToClientHelper.setPreferences(this);
         });
-        ctx.setPacketHandled(true);
     }
 
 }

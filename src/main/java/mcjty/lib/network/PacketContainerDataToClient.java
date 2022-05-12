@@ -5,19 +5,22 @@ import io.netty.buffer.Unpooled;
 import mcjty.lib.api.container.IContainerDataListener;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.varia.SafeClientTools;
+import me.pepperbell.simplenetworking.S2CPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraftforge.network.NetworkEvent;
 
-import java.util.function.Supplier;
-
-public class PacketContainerDataToClient {
+public class PacketContainerDataToClient implements S2CPacket {
 
     private final ResourceLocation id;
     private final FriendlyByteBuf buffer;
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeResourceLocation(id);
         int l = buffer.array().length;
         buf.writeInt(l);
@@ -40,9 +43,9 @@ public class PacketContainerDataToClient {
         this.buffer = buffer;
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    @Override
+    public void handle(Minecraft client, ClientPacketListener clientPacketListener, PacketSender responseSender, SimpleChannel channel) {
+        client.execute(() -> {
             AbstractContainerMenu container = SafeClientTools.getClientPlayer().containerMenu;
             if (container instanceof GenericContainer gc) {
                 IContainerDataListener listener = gc.getListener(id);
@@ -51,7 +54,6 @@ public class PacketContainerDataToClient {
                 }
             }
         });
-        ctx.setPacketHandled(true);
     }
 
 

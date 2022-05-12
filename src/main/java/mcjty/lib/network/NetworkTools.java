@@ -1,12 +1,12 @@
 package mcjty.lib.network;
 
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import io.netty.buffer.ByteBuf;
 import mcjty.lib.varia.Logging;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;

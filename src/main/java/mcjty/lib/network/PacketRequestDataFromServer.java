@@ -5,22 +5,22 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.LevelTools;
 import mcjty.lib.varia.Logging;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.resources.ResourceKey;
+import me.pepperbell.simplenetworking.C2SPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.simple.SimpleChannel;
-
-import java.util.function.Supplier;
 
 /**
  * This is a packet that can be used to send a command from the client side (typically the GUI) to
  * a tile entity on the server that has a ResultCommand annotated with @ServerCommand
  */
-public class PacketRequestDataFromServer {
+public class PacketRequestDataFromServer implements C2SPacket {
     protected BlockPos pos;
     private final ResourceKey<Level> type;
     protected String command;
@@ -35,7 +35,8 @@ public class PacketRequestDataFromServer {
         dummy = buf.readBoolean();
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeResourceLocation(type.location());
         buf.writeUtf(command);
@@ -59,16 +60,16 @@ public class PacketRequestDataFromServer {
         this.dummy = dummy;
     }
 
-    public void handle(SimpleChannel channel, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
-            Level world = LevelTools.getLevel(ctx.getSender().getCommandSenderWorld(), type);
+    @Override
+    public void handle(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl listener, PacketSender responseSender, SimpleChannel channel) {
+        server.execute(() -> {
+            Level world = LevelTools.getLevel(player.getCommandSenderWorld(), type);
             if (world.hasChunkAt(pos)) {
                 if (world.getBlockEntity(pos) instanceof GenericTileEntity generic) {
-                    TypedMap result = generic.executeServerCommandWR(command, ctx.getSender(), params);
+                    TypedMap result = generic.executeServerCommandWR(command, player, params);
                     if (result != null) {
                         PacketDataFromServer msg = new PacketDataFromServer(dummy ? null : pos, command, result);
-                        channel.sendTo(msg, ctx.getSender().connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+                        channel.sendToClient(msg, player);
                         return;
                     }
                 }
@@ -76,6 +77,5 @@ public class PacketRequestDataFromServer {
                 Logging.log("Command " + command + " was not handled!");
             }
         });
-        ctx.setPacketHandled(true);
     }
 }

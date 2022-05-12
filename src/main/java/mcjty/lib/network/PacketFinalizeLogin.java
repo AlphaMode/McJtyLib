@@ -1,26 +1,28 @@
 package mcjty.lib.network;
 
+import me.pepperbell.simplenetworking.S2CPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 /**
  * This is sent from the server to the client after the login has occured so that packets that implement
  * IClientServerDelayed can be sent
  */
-public class PacketFinalizeLogin {
+public class PacketFinalizeLogin implements S2CPacket {
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
     }
 
     public PacketFinalizeLogin(FriendlyByteBuf buf) {
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
+    @Override
+    public void handle(Minecraft client, ClientPacketListener listener, PacketSender responseSender, SimpleChannel channel) {
         finalizeClientLogin();
-        ctx.setPacketHandled(true);
     }
 
     private void finalizeClientLogin() {

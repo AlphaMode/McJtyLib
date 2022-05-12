@@ -1,14 +1,17 @@
 package mcjty.lib.network;
 
 import mcjty.lib.typed.TypedMap;
+import me.pepperbell.simplenetworking.S2CPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
 
 import javax.annotation.Nonnull;
-import java.util.function.Supplier;
 
 @SuppressWarnings("ALL")
-public class PacketSendClientCommand {
+public class PacketSendClientCommand implements S2CPacket {
 
     // Package visible for unit tests
     String modid;
@@ -28,7 +31,8 @@ public class PacketSendClientCommand {
         return arguments;
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeUtf(modid);
         buf.writeUtf(command);
         TypedMapTools.writeArguments(buf, arguments);
@@ -46,11 +50,9 @@ public class PacketSendClientCommand {
         this.arguments = arguments;
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    public void handle(Minecraft client, ClientPacketListener listener, PacketSender responseSender, SimpleChannel channel) {
+        client.execute(() -> {
             ClientCommandHandlerHelper.handle(this);
         });
-        ctx.setPacketHandled(true);
     }
 }

@@ -7,25 +7,27 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.LevelTools;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.SafeClientTools;
+import me.pepperbell.simplenetworking.C2SPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * This is executed clientside
  * Packet to get a list from the server using a @ServerCommand/ListCommand
  */
-public class PacketGetListFromServer {
+public class PacketGetListFromServer implements C2SPacket {
 
     protected final ResourceKey<Level> dimension;
     protected final BlockPos pos;
@@ -39,7 +41,8 @@ public class PacketGetListFromServer {
         params = TypedMapTools.readArguments(buf);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeResourceLocation(dimension.location());
         buf.writeBlockPos(pos);
         buf.writeUtf(command);
@@ -67,11 +70,10 @@ public class PacketGetListFromServer {
         this.params = TypedMap.EMPTY;
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
-            ServerPlayer player = ctx.getSender();
-            ServerLevel world = LevelTools.getLevel(ctx.getSender().getCommandSenderWorld(), dimension);
+    @Override
+    public void handle(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl listener, PacketSender responseSender, SimpleChannel channel) {
+        server.execute(() -> {
+            ServerLevel world = LevelTools.getLevel(player.getCommandSenderWorld(), dimension);
             if (world.hasChunkAt(pos)) {
                 BlockEntity te = world.getBlockEntity(pos);
                 if (te instanceof GenericTileEntity generic) {
@@ -81,12 +83,11 @@ public class PacketGetListFromServer {
                     }
                     Class type = info.type();
                     List list = generic.executeServerCommandList(command, player, params, type);
-                    McJtyLib.networkHandler.sendTo(new PacketSendResultToClient(pos, command, list), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+                    McJtyLib.networkHandler.sendToClient(new PacketSendResultToClient(pos, command, list), player);
                 } else {
                     Logging.logError("Command '" + command + "' not handled!");
                 }
             }
         });
-        ctx.setPacketHandled(true);
     }
 }

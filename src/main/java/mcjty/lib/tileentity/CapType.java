@@ -1,5 +1,6 @@
 package mcjty.lib.tileentity;
 
+import dev.onyxstudios.cca.api.v3.component.Component;
 import mcjty.lib.api.container.CapabilityContainerProvider;
 import mcjty.lib.api.information.CapabilityPowerInformation;
 import mcjty.lib.api.infusable.CapabilityInfusable;
@@ -21,7 +22,7 @@ public enum CapType {
 
     private final Capability capability;
 
-    CapType(Capability capability) {
+    CapType(Component capability) {
         this.capability = capability;
     }
 

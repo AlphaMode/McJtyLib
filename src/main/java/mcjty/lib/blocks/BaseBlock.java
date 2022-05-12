@@ -1,5 +1,6 @@
 package mcjty.lib.blocks;
 
+import io.github.fabricators_of_create.porting_lib.util.NetworkUtil;
 import mcjty.lib.McJtyLib;
 import mcjty.lib.api.container.CapabilityContainerProvider;
 import mcjty.lib.api.module.CapabilityModuleSupport;
@@ -21,6 +22,7 @@ import mcjty.lib.varia.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
@@ -48,7 +50,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -89,7 +90,7 @@ public class BaseBlock extends Block implements WailaInfoProvider, TOPInfoProvid
         intAddInformation(stack, tooltip);
 
         if (tooltipBuilder.isActive()) {
-            tooltipBuilder.makeTooltip(getRegistryName(), stack, tooltip, advanced);
+            tooltipBuilder.makeTooltip(Registry.BLOCK.getKey(this), stack, tooltip, advanced);
         }
     }
 
@@ -188,7 +189,7 @@ public class BaseBlock extends Block implements WailaInfoProvider, TOPInfoProvid
         if (!heldItem.isEmpty()) {
             BlockEntity te = world.getBlockEntity(pos);
             if (te != null) {
-                return te.getCapability(CapabilityModuleSupport.MODULE_CAPABILITY).map(h -> {
+                return CapabilityModuleSupport.MODULE_CAPABILITY.maybeGet(te).map(h -> {
                     if (h.isModule(heldItem)) {
                         return ModuleTools.installModule(player, heldItem, hand, pos, h.getFirstSlot(), h.getLastSlot());
                     }
@@ -250,7 +251,7 @@ public class BaseBlock extends Block implements WailaInfoProvider, TOPInfoProvid
             if (checkAccess(world, player, te)) {
                 return true;
             }
-            NetworkHooks.openGui((ServerPlayer) player, h, te.getBlockPos());
+            NetworkUtil.openGui((ServerPlayer) player, h, te.getBlockPos());
             return true;
         }).orElse(false);
     }

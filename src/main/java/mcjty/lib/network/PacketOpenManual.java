@@ -3,6 +3,7 @@ package mcjty.lib.network;
 import mcjty.lib.compat.patchouli.PatchouliCompatibility;
 import me.pepperbell.simplenetworking.C2SPacket;
 import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -38,7 +39,7 @@ public class PacketOpenManual implements C2SPacket {
     }
 
     @Override
-    public void handle(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler, SimpleChannel.ResponseTarget responseTarget) {
+    public void handle(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl listener, PacketSender responseSender, SimpleChannel channel) {
         server.execute(() -> handle(this, player));
     }
 

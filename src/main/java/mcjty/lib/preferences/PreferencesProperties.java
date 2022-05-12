@@ -1,17 +1,16 @@
 package mcjty.lib.preferences;
 
+import dev.onyxstudios.cca.api.v3.entity.PlayerComponent;
 import mcjty.lib.McJtyLib;
 import mcjty.lib.gui.BuffStyle;
 import mcjty.lib.gui.GuiStyle;
 import mcjty.lib.network.PacketSendPreferencesToClient;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.minecraftforge.network.NetworkDirection;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nonnull;
 
-public class PreferencesProperties {
+public class PreferencesProperties implements PlayerComponent<PreferencesProperties> {
 
     private static final int DEFAULT_BUFFX = -20;
     private static final int DEFAULT_BUFFY = -20;
@@ -34,18 +33,20 @@ public class PreferencesProperties {
     }
 
     private void syncToClient(ServerPlayer player) {
-        McJtyLib.networkHandler.sendTo(new PacketSendPreferencesToClient(buffStyle, buffX, buffY, style), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+        McJtyLib.networkHandler.sendToClient(new PacketSendPreferencesToClient(buffStyle, buffX, buffY, style), player);
         dirty = false;
     }
 
-    public void saveNBTData(CompoundTag compound) {
+    @Override
+    public void writeToNbt(CompoundTag compound) {
         compound.putString("buffStyle", buffStyle.getName());
         compound.putInt("buffX", buffX);
         compound.putInt("buffY", buffY);
         compound.putString("style", style.getStyle());
     }
 
-    public void loadNBTData(CompoundTag compound) {
+    @Override
+    public void readFromNbt(CompoundTag compound) {
         buffStyle = BuffStyle.getStyle(compound.getString("buffStyle"));
         if (buffStyle == null) {
             buffStyle = BuffStyle.BOTRIGHT;

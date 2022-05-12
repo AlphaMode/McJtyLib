@@ -1,5 +1,7 @@
 package mcjty.lib.container;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import io.github.fabricators_of_create.porting_lib.util.INBTSerializable;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.varia.ItemStackList;
 import net.minecraft.world.item.Item;

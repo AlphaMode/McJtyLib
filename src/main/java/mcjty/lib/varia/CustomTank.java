@@ -1,22 +1,18 @@
 package mcjty.lib.varia;
 
+import io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.IFluidTank;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nonnull;
 
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
-
-public class CustomTank implements IFluidHandler, IFluidTank {
+public class CustomTank extends FluidTank {
 
     @Nonnull
     protected FluidStack fluid = FluidStack.EMPTY;
-    protected int capacity;
 
-    public CustomTank(int capacity) {
-        this.capacity = capacity;
+    public CustomTank(long capacity) {
+        super(capacity);
     }
 
     public CustomTank setCapacity(int capacity) {
@@ -25,12 +21,7 @@ public class CustomTank implements IFluidHandler, IFluidTank {
     }
 
     @Override
-    public boolean isFluidValid(FluidStack stack) {
-        return true;
-    }
-
-    @Override
-    public int getCapacity() {
+    public long getCapacity() {
         return capacity;
     }
 
@@ -41,102 +32,21 @@ public class CustomTank implements IFluidHandler, IFluidTank {
     }
 
     @Override
-    public int getFluidAmount() {
+    public long getFluidAmount() {
         return fluid.getAmount();
     }
 
+    @Override
     public CustomTank readFromNBT(CompoundTag nbt) {
         FluidStack fluid = FluidStack.loadFluidStackFromNBT(nbt);
         setFluid(fluid);
         return this;
     }
 
+    @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         fluid.writeToNBT(nbt);
         return nbt;
-    }
-
-    @Override
-    public int getTanks() {
-        return 1;
-    }
-
-    @Nonnull
-    @Override
-    public FluidStack getFluidInTank(int tank) {
-        return getFluid();
-    }
-
-    @Override
-    public int getTankCapacity(int tank) {
-        return getCapacity();
-    }
-
-    @Override
-    public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
-        return isFluidValid(stack);
-    }
-
-    @Override
-    public int fill(FluidStack resource, FluidAction action) {
-        if (resource.isEmpty() || !isFluidValid(resource)) {
-            return 0;
-        }
-        if (action.simulate()) {
-            if (fluid.isEmpty()) {
-                return Math.min(capacity, resource.getAmount());
-            }
-            if (!fluid.isFluidEqual(resource)) {
-                return 0;
-            }
-            return Math.min(capacity - fluid.getAmount(), resource.getAmount());
-        }
-        if (fluid.isEmpty()) {
-            onContentsChanged();
-            fluid = new FluidStack(resource, Math.min(capacity, resource.getAmount()));
-            return fluid.getAmount();
-        }
-        if (!fluid.isFluidEqual(resource)) {
-            return 0;
-        }
-        int filled = capacity - fluid.getAmount();
-
-        if (resource.getAmount() < filled) {
-            onContentsChanged();
-            fluid.grow(resource.getAmount());
-            filled = resource.getAmount();
-        } else {
-            onContentsChanged();
-            fluid.setAmount(capacity);
-        }
-        return filled;
-    }
-
-    @Nonnull
-    @Override
-    public FluidStack drain(FluidStack resource, FluidAction action) {
-        if (resource.isEmpty() || !resource.isFluidEqual(fluid)) {
-            return FluidStack.EMPTY;
-        }
-        return drain(resource.getAmount(), action);
-    }
-
-    @Nonnull
-    @Override
-    public FluidStack drain(int maxDrain, FluidAction action) {
-        int drained = maxDrain;
-        if (fluid.getAmount() < drained) {
-            drained = fluid.getAmount();
-        }
-        FluidStack stack = new FluidStack(fluid, drained);
-        if (action.execute()) {
-            onContentsChanged();
-            fluid.shrink(drained);
-        }
-        if (fluid.getAmount() <= 0) {
-            fluid = FluidStack.EMPTY;
-        }
-        return stack;
     }
 
     protected void onContentsChanged() {
@@ -151,7 +61,7 @@ public class CustomTank implements IFluidHandler, IFluidTank {
         return fluid.isEmpty();
     }
 
-    public int getSpace() {
+    public long getSpace() {
         return Math.max(0, capacity - fluid.getAmount());
     }
 

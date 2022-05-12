@@ -6,22 +6,25 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.SafeClientTools;
+import me.pepperbell.simplenetworking.S2CPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.network.NetworkEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * Packet to send back the list to the client. This requires
  * that the command is registered to McJtyLib.registerListCommandInfo
  */
-public class PacketSendResultToClient {
+public class PacketSendResultToClient implements S2CPacket {
 
     private final BlockPos pos;
     private final List list;
@@ -52,7 +55,8 @@ public class PacketSendResultToClient {
         this.list = new ArrayList<>(list);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void encode(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeUtf(command);
         CommandInfo<?> info = McJtyLib.getCommandInfo(command);
@@ -73,9 +77,8 @@ public class PacketSendResultToClient {
         }
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    public void handle(Minecraft client, ClientPacketListener listener, PacketSender responseSender, SimpleChannel channel) {
+        client.execute(() -> {
             BlockEntity te = SafeClientTools.getClientWorld().getBlockEntity(pos);
             if (te instanceof GenericTileEntity generic) {
                 generic.handleListFromServer(command, SafeClientTools.getClientPlayer(), TypedMap.EMPTY, list);
@@ -83,7 +86,6 @@ public class PacketSendResultToClient {
                 Logging.logError("Can't handle command '" + command + "'!");
             }
         });
-        ctx.setPacketHandled(true);
     }
 
 }

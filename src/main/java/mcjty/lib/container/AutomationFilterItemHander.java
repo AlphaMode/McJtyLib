@@ -1,8 +1,8 @@
 package mcjty.lib.container;
 
+import io.github.fabricators_of_create.porting_lib.util.INBTSerializable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.ListTag;
-import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.IItemHandlerModifiable;
 
 import javax.annotation.Nonnull;

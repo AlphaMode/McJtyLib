@@ -1,9 +1,8 @@
 package mcjty.lib.keys;
 
-import net.minecraft.client.KeyMapping;
 import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraftforge.client.settings.KeyConflictContext;
-import net.minecraftforge.client.ClientRegistry;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.client.KeyMapping;
 
 
 public class KeyBindings {
@@ -11,7 +10,7 @@ public class KeyBindings {
     public static KeyMapping openManual;
 
     public static void init() {
-        openManual = new KeyMapping("key.openManual", KeyConflictContext.GUI, InputConstants.getKey("key.keyboard.f1"), "key.categories.mcjtylib");
-        ClientRegistry.registerKeyBinding(openManual);
+        openManual = new KeyMapping("key.openManual", InputConstants.getKey("key.keyboard.f1").getValue(), "key.categories.mcjtylib");
+        KeyBindingHelper.registerKeyBinding(openManual);
     }
 }
